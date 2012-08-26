@@ -1,0 +1,6 @@
+{
+    "author" : "Exile Team",
+    "id" : "ExileExplosions",
+    "albumName" : "Terasology - Explosions",
+    "attribution" : "http://forum.movingblocks.net/threads/sfx-factory-other-side-complete.122/"
+}

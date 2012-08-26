@@ -1,0 +1,8 @@
+{
+    "author" : "Karina Kireev",
+    "id" : "KarinaOST",
+    "status" : "enabled",
+    "albumName" : "Terasology Music",
+    "attribution" : "http://forum.movingblocks.net/threads/music-made-its-way-into-blockmania.17/",
+    "hooks" : ["Dimlight:WorldTimeEvent=0.1","OtherSide:WorldTimeEvent=0.25","Resurface:WorldTimeEvent=0.4"]
+}

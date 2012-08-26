@@ -1,0 +1,70 @@
+/* Badges */
+ 
+.badge {
+font-size: 10px;
+font-weight: bold;
+margin: -5px -5px -2px;
+text-align: center;
+}
+ 
+.badge li {
+position: relative;
+}
+ 
+.badgeArchitectureTeam {
+background: url('custom_images/badges/architect-g.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeArtTeam {
+background: url('custom_images/badges/art-g.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeContributor {
+background: url('custom_images/badges/contributor-g.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeDesignTeam {
+background: url('custom_images/badges/design-g.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeWorldTeam {
+background: url('custom_images/badges/world-g.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeGuiTeam {
+background: url('custom_images/badges/gui.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeLogisticsTeam {
+background: url('custom_images/badges/logistics2.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+ 
+/* End Badges */

@@ -1,0 +1,8 @@
+{
+    "author" : "Exile Team",
+    "id" : "ExileOST",
+    "status" : "enabled",
+    "albumName" : "Terasology BGM",
+    "attribution" : "http://forum.movingblocks.net/threads/sfx-factory-other-side-complete.122/",
+    "hooks" : ["Dimlight:WorldTimeEvent=0.6","OtherSide:WorldTimeEvent=0.75","Resurface:WorldTimeEvent=0.9"]
+}

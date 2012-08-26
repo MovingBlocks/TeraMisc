@@ -1,0 +1,6 @@
+{
+    "author" : "Exile Team",
+    "id" : "ExileSlime",
+    "albumName" : "Terasology - Slime Squishes",
+    "attribution" : "http://forum.movingblocks.net/threads/sfx-factory-other-side-complete.122/"
+}

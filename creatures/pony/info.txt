@@ -1,0 +1,8 @@
+{
+    "author" : "basilix,glasz",
+    "id" : "pony",
+    "status" : "pending animation",
+    "model" : "Pony.obj",
+    "texture" : "pony_layout_tex01.png",
+    "attribution" : "https://github.com/Darluz/Terasology/commit/7b194171c2873d3d26ad41ad67df3158d4d936a7,http://forum.movingblocks.net/threads/animals.394/page-7#post-4424,http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4527"
+}

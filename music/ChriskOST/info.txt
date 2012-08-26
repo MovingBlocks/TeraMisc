@@ -1,0 +1,8 @@
+{
+    "author" : "Chris Köbke",
+    "id" : "ChriskOST",
+    "status" : "pending hooks",
+    "albumName" : "Terasology - OST",
+    "attribution" : "http://forum.movingblocks.net/threads/chrisk.449/",
+    "hooks" : ["CreepyCaves:NONE","NightTheme:NONE","OrcFortress:NONE"]
+}

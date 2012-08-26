@@ -1,0 +1,6 @@
+{
+    "author" : "SuperSnark",
+    "id" : "Badges",
+    "status" : "enabled",
+    "attribution" : "http://forum.movingblocks.net/threads/art-request-mascot-logo-badges.318/#post-3051"
+}
