@@ -3,6 +3,7 @@
     "id" : "perdemot",
     "status" : "pending animation",
     "model" : "Perdemot.obj",
+    "concept art" : "perdemot".
     "texture" : "Perdemot_texture.jpg"
     "attribution" : "http://forum.movingblocks.net/threads/monsters.398/page-3#post-4769, http://forum.movingblocks.net/threads/monsters.398/page-3#post-4813"
 }

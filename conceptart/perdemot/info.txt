@@ -1,6 +1,0 @@
-{
-    "author" : "Perdemot",
-    "id" : "perdemot",
-    "status" : "model pending by basilix, texture pending by Perdemot",
-    "attribution" : "http://forum.movingblocks.net/threads/monsters.398/page-3#post-4769"
-}
