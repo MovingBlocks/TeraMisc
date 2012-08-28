@@ -1,0 +1,8 @@
+{
+    "author" : "basilix",
+    "id" : "kiwi",
+    "status" : "complete",
+    "model" : "Kiwi.obj",
+    "texture" : "Kiwi_Texture.jpg",
+    "attribution" : "http://forum.movingblocks.net/threads/animals.394/page-7#post-4685, http://forum.movingblocks.net/threads/basilix.530/"
+}

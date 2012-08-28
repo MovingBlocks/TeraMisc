@@ -1,0 +1,8 @@
+{
+    "author" : "basilix, perdemot",
+    "id" : "sneakyFish",
+    "status" : "pending texture-animation, needs some tweaking",
+    "concept art" : "perdemot".
+    "model" : "SneakyFish.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/monsters.398/page-4#post-4850,http://forum.movingblocks.net/threads/monsters.398/page-4#post-4854"
+}
