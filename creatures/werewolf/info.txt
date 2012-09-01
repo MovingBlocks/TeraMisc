@@ -1,0 +1,7 @@
+{
+    "author" : "Double_A",
+    "id" : "werewolf",
+    "status" : "pending texture-animation",
+    "model" : "Werewolf.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/animals.394/page-6#post-4319"
+}

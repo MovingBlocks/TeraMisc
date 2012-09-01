@@ -1,7 +1,7 @@
 {
     "author" : "perdemot, basilix",
     "id" : "perdemot",
-    "status" : "pending animation",
+    "status" : "complete",
     "model" : "Perdemot.obj",
     "concept art" : "perdemot".
     "texture" : "Perdemot_texture.jpg"

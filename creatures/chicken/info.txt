@@ -1,0 +1,7 @@
+{
+    "author" : "Double_A",
+    "id" : "chicken",
+    "status" : "pending texture-animation",
+    "model" : "Chicken.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/animals.394/page-7#post-4386"
+}

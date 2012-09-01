@@ -4,5 +4,5 @@
     "status" : "complete",
     "model" : "vampire0.7.2.obj",
     "texture" : "vampire07_tex_small.png",
-    "attribution" : "http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4527"
+    "attribution" : "http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4916"
 }
