@@ -1,0 +1,7 @@
+{
+    "author" : "Double_A",
+    "id" : "lion",
+    "status" : "pending texture-animation",
+    "model" : "Lion.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/animals.394/page-6#post-4319"
+}

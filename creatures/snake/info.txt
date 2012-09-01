@@ -1,0 +1,8 @@
+{
+    "author" : "A'nW",
+    "id" : "snake",
+    "status" : "pending animation",
+    "model" : "TeraSnake.obj",
+    "texture" : "TeraSnakeSkin.png"
+    "attribution" : "http://forum.movingblocks.net/threads/animals.394/page-8#post-4840"
+}

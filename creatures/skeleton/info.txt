@@ -1,0 +1,7 @@
+{
+    "author" : "Double_A",
+    "id" : "skeleton",
+    "status" : "pending texture-animation",
+    "model" : "Skeleton.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4467"
+}
