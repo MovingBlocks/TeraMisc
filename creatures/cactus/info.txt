@@ -1,0 +1,7 @@
+{
+    "author" : "basilix",
+    "id" : "cactus",
+    "status" : "pending animation",
+    "model" : "cactus.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/monsters.398/page-4#post-4975".
+}
