@@ -1,0 +1,7 @@
+{
+    "author" : "Wolfghard",
+    "id" : "deer",
+    "status" : "pending animation - one file texture",
+    "model" : "deer.obj",
+    "attribution" : "http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4932"
+}
