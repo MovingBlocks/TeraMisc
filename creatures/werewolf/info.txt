@@ -1,7 +1,0 @@
-{
-    "author" : "Nym Traveel",
-    "id" : "werewolf",
-    "status" : "pending texture-animation",
-    "model" : "Werewolf.obj",
-    "attribution" : "http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4934,http://p3d.in/oe1mf"
-}
