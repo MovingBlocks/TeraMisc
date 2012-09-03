@@ -1,0 +1,8 @@
+{
+    "author" : "A'nW",
+    "id" : "blockydwarf",
+    "status" : "pending animation",
+    "model" : "Dwarf.obj",
+    "texture" : "DwarfSkin.png"
+    "attribution" : "http://forum.movingblocks.net/threads/models-concept-art-creature-system.198/#post-1479"
+}

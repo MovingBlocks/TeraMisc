@@ -1,0 +1,26 @@
+SAVED_WORLDS
+screens
+logs
+out
+target
+build
+.DS_Store
+TeraMisc.iml
+TeraMisc.ipr
+TeraMisc.iws
+Terasology.iml
+Terasology.ipr
+Terasology.iws
+.idea
+.classpath
+.project
+.settings
+.gradle
+bin
+data/console/consolelog.json
+benchmark-temp
+*~
+
+# Ignore error logs 
+*.log
+

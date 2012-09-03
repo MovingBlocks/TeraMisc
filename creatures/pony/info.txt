@@ -1,7 +1,7 @@
 {
     "author" : "basilix,glasz",
     "id" : "pony",
-    "status" : "complete",
+    "status" : "complete, obj re-exported with normals by Josh, pending check-in",
     "model" : "pony_tex.obj",
     "texture" : "pony_layout_tex01.png",
     "attribution" : "http://forum.movingblocks.net/threads/sir-lady-do-you-have-a-model-for-me.470/#post-4916, http://forum.movingblocks.net/threads/animals.394/page-7#post-4424"
