@@ -1,5 +1,5 @@
 {
-    "author" : "Chris K�bke",
+    "author" : "Chris Köbke",
     "id" : "ChriskOST",
     "status" : "pending hooks",
     "albumName" : "Terasology - OST",
