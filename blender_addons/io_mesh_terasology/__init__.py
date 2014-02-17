@@ -10,7 +10,7 @@ bl_info = {
 	"name": "Terasology Block Shape Export",
 	"description": "Exporter for producing Terasology Block Shape files (in JSON format)",
 	"author": "Immortius",
-	"version": (1, 2),
+	"version": (1, 3),
 	"blender": (2, 6, 0),
 	"location": "File > Import-Export",
 	"category": "Import-Export"}
@@ -54,6 +54,11 @@ class ExportBlockShape(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 bpy.types.Scene.teraAuthor = StringProperty(
 	name="Author",
 	description="Is this side of the block complete",
+	default = "")
+
+bpy.types.Scene.teraDisplayName = StringProperty(
+	name="Display Name",
+	description="The name of the shape, displayed in game",
 	default = "")
 	
 bpy.types.Scene.teraCollisionType = bpy.props.EnumProperty( 

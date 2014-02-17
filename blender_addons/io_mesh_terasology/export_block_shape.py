@@ -288,7 +288,8 @@ def save(operator,
 	fw = file.write
 	fw("{\n")
 	
-	fw('	"author" : "%s",\n' % scene.teraAuthor)
+	fw('	"displayName" : "%s",\n' % scene.teraDisplayName)
+	fw('	"author" : "%s",\n' % scene.teraAuthor)	
 	
 	now = datetime.datetime.now()
 	
