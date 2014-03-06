@@ -24,8 +24,8 @@ class ExportBlockShape(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
 	bl_idname = "export_mesh.terasology_block_shape"
 	bl_label = "Export Terasology Block Shape"
 
-	filename_ext = ".json"
-	filter_glob = StringProperty(default="*.json", options={'HIDDEN'})
+	filename_ext = ".shape"
+	filter_glob = StringProperty(default="*.shape", options={'HIDDEN'})
 
 	apply_modifiers = BoolProperty(
 		name="Apply Modifiers",
@@ -143,7 +143,7 @@ class TeraObjectPropUIPanel(bpy.types.Panel):
 		layout.prop(ob, 'teraColliderType')
 		
 def menu_export(self, context):
-	self.layout.operator(ExportBlockShape.bl_idname, text="Terasology Block Shape (.json)")
+	self.layout.operator(ExportBlockShape.bl_idname, text="Terasology Block Shape (.shape)")
 
 def register():
 	bpy.utils.register_module(__name__)
