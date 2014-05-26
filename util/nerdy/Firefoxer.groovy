@@ -1,7 +1,8 @@
 import groovy.json.JsonSlurper
 
-// Script assumes the FF sessionstore.js file exists in the same directory
-File sourceFile = new File("sessionstore.js")
+// Script assumes the FF sessionstore.js file exists in /firefox
+println "Copying in the session file"
+File sourceFile = new File("firefox/sessionstore.js")
 def slurp = new JsonSlurper().parse(new FileReader(sourceFile))
 
 // There may technically be more than one window, but not really worried about that
@@ -24,6 +25,8 @@ println "Finally got the actual URL entries with a total of: " + url.size()
 println "************************* TABS *************************************"
 
 def totalTabsPlusHistory = 0
+File urlsOut = new File("firefox/urls.txt")
+urlsOut.delete()
 
 url.each {
     println "This tab held " + it.size() + " past URLs"
@@ -31,6 +34,7 @@ url.each {
 
     // Since Firefox stores each previous URL visited in the tab (up to a limit, maybe? 50?) we want the last one
     println "Active URL: " + it[-1]
+    urlsOut << it[-1] + "\r\n"
 }
 
 println "Total tabs plus history held a grand total of " + totalTabsPlusHistory + " urls."

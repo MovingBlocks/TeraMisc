@@ -24,3 +24,5 @@ benchmark-temp
 # Ignore error logs 
 *.log
 
+$ Ignore nerdy local stuff
+util/nerdy/sessionstore.js

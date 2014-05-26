@@ -66,5 +66,21 @@ width: 120px;
 margin-right: auto;
 margin-left: auto;
 }
+
+.badgeSpoutTeam {
+background: url('custom_images/badges/spout.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
+
+.badgeHunterTeam {
+background: url('custom_images/badges/hunter.png');
+height: 30px;
+width: 120px;
+margin-right: auto;
+margin-left: auto;
+}
  
 /* End Badges */
