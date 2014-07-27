@@ -1,0 +1,167 @@
+<xen:require css="message_user_info.css" />
+
+<div class="messageUserInfo" itemscope="itemscope" itemtype="http://data-vocabulary.org/Person">	
+<div class="messageUserBlock">
+	<xen:hook name="message_user_info_avatar" params="{xen:array 'user={$user}', 'isQuickReply={$isQuickReply}'}">
+		<div class="avatarHolder">
+			<span class="helper"></span>
+			<xen:avatar user="$user" size="m" />
+			<!-- slot: message_user_info_avatar -->
+		</div>
+	</xen:hook>
+
+<xen:if hascontent="true">
+<ul class="badge">
+<xen:contentcheck>
+ 
+<xen:if is="{xen:helper ismemberof, $user, 12}">
+<li class="badgeDesignTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 13}">
+<li class="badgeArtTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 14}">
+<li class="badgeWorldTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 15}">
+<li class="badgeArchitectureTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 16}">
+<li class="badgeSpoutTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 17}">
+<li class="badgeGuiTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 18}">
+<li class="badgeLogisticsTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 19}">
+<li class="badgeHunterTeam">
+</li>
+</xen:if>
+
+<xen:if is="{xen:helper ismemberof, $user, 10} 
+   AND !{xen:helper ismemberof, $user, 12}
+   AND !{xen:helper ismemberof, $user, 13}
+   AND !{xen:helper ismemberof, $user, 14}
+   AND !{xen:helper ismemberof, $user, 15}
+   AND !{xen:helper ismemberof, $user, 17}
+   AND !{xen:helper ismemberof, $user, 18}
+   AND !{xen:helper ismemberof, $user, 19}">
+<li class="badgeContributor">
+</li>
+</xen:if>
+ 
+</xen:contentcheck>
+</ul>
+</xen:if>
+
+<xen:if is="!{$isQuickReply}">
+	<xen:hook name="message_user_info_text" params="{xen:array 'user={$user}', 'isQuickReply={$isQuickReply}'}">
+		<h3 class="userText">
+			<xen:username user="$user" itemprop="name" rich="true" />
+			<xen:if hascontent="true"><em class="userTitle" itemprop="title"><xen:contentcheck>{xen:helper userTitle, $user}</xen:contentcheck></em></xen:if>
+			<!-- slot: message_user_info_text -->
+		</h3>
+	</xen:hook>
+		
+	<xen:if hascontent="true">
+		<div class="extraUserInfo">
+			<xen:contentcheck>
+			<xen:hook name="message_user_info_extra" params="{xen:array 'user={$user}', 'isQuickReply={$isQuickReply}'}">
+				<xen:if is="@messageShowRegisterDate">
+					<dl class="pairsInline">
+						<dt>{xen:phrase member_since}:</dt>
+						<dd>{xen:date $user.register_date}</dd>
+					</dl>
+				</xen:if>
+				
+				<xen:if is="@messageShowMessageCount">
+					<dl class="pairsInline">
+						<dt>{xen:phrase message_count}:</dt>
+						<dd><a href="{xen:link search/member, '', 'user_id={$user.user_id}'}" class="concealed">{xen:number $user.message_count}</a></dd>
+					</dl>
+				</xen:if>
+				
+				<xen:if is="@messageShowTotalLikes">
+					<dl class="pairsInline">
+						<dt>{xen:phrase likes_received}:</dt>
+						<dd>{xen:number $user.like_count}</dd>
+					</dl>
+				</xen:if>
+				
+				<xen:if is="@messageShowTrophyPoints">
+					<dl class="pairsInline">
+						<dt>{xen:phrase trophy_points}:</dt>
+						<dd><a href="{xen:link 'members/trophies', $user}" class="OverlayTrigger concealed">{xen:number $user.trophy_points}</a></dd>
+					</dl>
+				</xen:if>
+			
+				<xen:if is="@messageShowGender AND {$user.gender}">
+					<dl class="pairsInline">
+						<dt>{xen:phrase gender}:</dt>
+						<dd itemprop="gender"><xen:if is="{$user.gender} == 'male'">{xen:phrase male}<xen:else />{xen:phrase female}</xen:if></dd>
+					</dl>
+				</xen:if>
+				
+				<xen:if is="@messageShowOccupation AND {$user.occupation}">
+					<dl class="pairsInline">
+						<dt>{xen:phrase occupation}:</dt>
+						<dd itemprop="role">{xen:string censor, $user.occupation}</dd>
+					</dl>
+				</xen:if>
+				
+				<xen:if is="@messageShowLocation AND {$user.location}">
+					<dl class="pairsInline">
+						<dt>{xen:phrase location}:</dt>
+						<dd><a href="{xen:link 'misc/location-info', '', 'location={xen:string censor, $user.location, '-'}'}" target="_blank" rel="nofollow" itemprop="address" class="concealed">{xen:string censor, $user.location}</a></dd>
+					</dl>
+				</xen:if>
+			
+				<xen:if is="@messageShowHomepage AND {$user.homepage}">
+					<dl class="pairsInline">
+						<dt>{xen:phrase home_page}:</dt>
+						<dd><a href="{xen:string censor, $user.homepage, '-'}" rel="nofollow" target="_blank" itemprop="url">{xen:string censor, $user.homepage}</a></dd>
+					</dl>
+				</xen:if>
+							
+			</xen:hook>			
+			<xen:if is="@messageShowCustomFields AND {$user.customFields}">
+			<xen:hook name="message_user_info_custom_fields" params="{xen:array 'user={$user}', 'isQuickReply={$isQuickReply}'}">
+			
+				<xen:foreach loop="$userFieldsInfo" key="$fieldId" value="$fieldInfo">
+					<xen:if is="{$fieldInfo.viewable_message}">
+						<xen:if hascontent="true">
+							<dl class="pairsInline userField_{$fieldId}">
+								<dt>{xen:helper userFieldTitle, $fieldId}:</dt>
+								<dd><xen:contentcheck>{xen:helper userFieldValue, $fieldInfo, $user, {$user.customFields.{$fieldId}}}</xen:contentcheck></dd>
+							</dl>
+						</xen:if>
+					</xen:if>
+				</xen:foreach>
+				
+			</xen:hook>
+			</xen:if>
+			</xen:contentcheck>
+		</div>
+	</xen:if>
+		
+</xen:if>
+
+	<span class="arrow"><span></span></span>
+</div>
+</div>
