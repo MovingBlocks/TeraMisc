@@ -1,18 +1,18 @@
 /* Badges */
- 
+
 .badge {
 font-size: 10px;
 font-weight: bold;
 margin: -5px -5px -2px;
 text-align: center;
 }
- 
+
 .badge li {
 position: relative;
 }
- 
+
 .badgeArchitectureTeam {
-background: url('custom_images/badges/architect-g.png');
+background: url('custom_images/badges/architect');
 height: 30px;
 width: 120px;
 margin-right: auto;
@@ -20,7 +20,7 @@ margin-left: auto;
 }
 
 .badgeArtTeam {
-background: url('custom_images/badges/art-g.png');
+background: url('custom_images/badges/art.png');
 height: 30px;
 width: 120px;
 margin-right: auto;
@@ -28,7 +28,7 @@ margin-left: auto;
 }
 
 .badgeContributor {
-background: url('custom_images/badges/contributor-g.png');
+background: url('custom_images/badges/contributor.png');
 height: 30px;
 width: 120px;
 margin-right: auto;
@@ -36,7 +36,7 @@ margin-left: auto;
 }
 
 .badgeDesignTeam {
-background: url('custom_images/badges/design-g.png');
+background: url('custom_images/badges/design.png');
 height: 30px;
 width: 120px;
 margin-right: auto;
@@ -44,7 +44,7 @@ margin-left: auto;
 }
 
 .badgeWorldTeam {
-background: url('custom_images/badges/world-g.png');
+background: url('custom_images/badges/world.png');
 height: 30px;
 width: 120px;
 margin-right: auto;
@@ -60,15 +60,15 @@ margin-left: auto;
 }
 
 .badgeLogisticsTeam {
-background: url('custom_images/badges/logistics2.png');
+background: url('custom_images/badges/logistics.png');
 height: 30px;
 width: 120px;
 margin-right: auto;
 margin-left: auto;
 }
 
-.badgeSpoutTeam {
-background: url('custom_images/badges/spout.png');
+.badgeSpecOpsTeam {
+background: url('custom_images/badges/specOps.png');
 height: 30px;
 width: 120px;
 margin-right: auto;
@@ -82,5 +82,5 @@ width: 120px;
 margin-right: auto;
 margin-left: auto;
 }
- 
+
 /* End Badges */

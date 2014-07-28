@@ -13,7 +13,7 @@
 <xen:if hascontent="true">
 <ul class="badge">
 <xen:contentcheck>
- 
+
 <xen:if is="{xen:helper ismemberof, $user, 12}">
 <li class="badgeDesignTeam">
 </li>
@@ -34,11 +34,6 @@
 </li>
 </xen:if>
 
-<xen:if is="{xen:helper ismemberof, $user, 16}">
-<li class="badgeSpoutTeam">
-</li>
-</xen:if>
-
 <xen:if is="{xen:helper ismemberof, $user, 17}">
 <li class="badgeGuiTeam">
 </li>
@@ -54,6 +49,12 @@
 </li>
 </xen:if>
 
+<xen:if is="{xen:helper ismemberof, $user, 20}">
+<li class="badgeSpecOpsTeam">
+</li>
+</xen:if>
+
+<!-- This block makes the Contributor badge disappear if the user has a "higher" badge -->
 <xen:if is="{xen:helper ismemberof, $user, 10} 
    AND !{xen:helper ismemberof, $user, 12}
    AND !{xen:helper ismemberof, $user, 13}
@@ -61,7 +62,8 @@
    AND !{xen:helper ismemberof, $user, 15}
    AND !{xen:helper ismemberof, $user, 17}
    AND !{xen:helper ismemberof, $user, 18}
-   AND !{xen:helper ismemberof, $user, 19}">
+   AND !{xen:helper ismemberof, $user, 19}
+   AND !{xen:helper ismemberof, $user, 20}">
 <li class="badgeContributor">
 </li>
 </xen:if>
