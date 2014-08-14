@@ -1,0 +1,273 @@
+.messageUserInfo
+{
+@property "messageUserInfo";
+    float: left;
+    width: 124px;
+@property "/messageUserInfo";
+}
+
+.badge {
+    font-size: 10px;
+    font-weight: bold;
+    margin: -5px -5px -2px;
+    text-align: center;
+}
+
+.badge li {
+    position: relative;
+}
+
+.badgeArchitectureTeam {
+    background: url('/custom_images/badges/architect.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeArtTeam {
+    background: url('/custom_images/badges/art.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeContributor {
+    background: url('/custom_images/badges/contributor.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeDesignTeam {
+    background: url('/custom_images/badges/design.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeWorldTeam {
+    background: url('/custom_images/badges/world.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeGuiTeam {
+    background: url('/custom_images/badges/gui.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeLogisticsTeam {
+    background: url('/custom_images/badges/logistics.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeSpecOpsTeam {
+    background: url('/custom_images/badges/specOps.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.badgeHunterTeam {
+    background: url('/custom_images/badges/hunter.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.messageUserBlock
+{
+@property "messageUserBlock";
+    background-color: rgb(216, 252, 215);
+    border: 1px solid rgb(216, 252, 215);
+    border-radius: 5px;
+@property "/messageUserBlock";
+
+    position: relative;
+}
+
+.messageUserBlock div.avatarHolder
+{
+@property "messageAvatarHolder";
+    background-color: @primaryLightest;
+    padding: 10px;
+    border-radius: 4px;
+@property "/messageAvatarHolder";
+}
+
+.messageUserBlock div.avatarHolder .avatar
+{
+    display: block;
+    font-size: 0;
+}
+
+.messageUserBlock h3.userText
+{
+@property "messageUserText";
+    padding: 6px;
+@property "/messageUserText";
+}
+
+.messageUserBlock .userBanner
+{
+    display: block;
+    margin-bottom: 5px;
+margin-left: -{xen:calc '@messageUserText.padding-left + 6'}px;
+margin-right: -{xen:calc '@messageUserText.padding-right + 6'}px;
+}
+
+.messageUserBlock .userBanner:last-child
+{
+    margin-bottom: 0;
+}
+
+.messageUserBlock a.username
+{
+@property "messageUsername";
+    font-weight: bold;
+    display: block;
+    overflow: hidden;
+    line-height: 16px;
+@property "/messageUsername";
+
+}
+
+.messageUserBlock .userTitle
+{
+@property "messageUserTitle";
+    font-size: 11px;
+    display: block;
+@property "/messageUserTitle";
+}
+
+.messageUserBlock .extraUserInfo
+{
+@property "messageExtraUserInfo";
+    font-size: 10px;
+    background-color: @primaryLightest;
+    padding: 4px 6px;
+    border-radius: 4px;
+@property "/messageExtraUserInfo";
+}
+
+.messageUserBlock .extraUserInfo dl
+{
+    margin: 2px 0 0;
+}
+
+.messageUserBlock .extraUserInfo img
+{
+    max-width: 100%;
+}
+
+.messageUserBlock .arrow
+{
+    position: absolute;
+    top: 10px;
+    right: -10px;
+
+    display: block;
+    width: 0px;
+    height: 0px;
+    line-height: 0px;
+
+    border: 10px solid transparent;
+    border-left-color: @messageUserBlock.border-color;
+    -moz-border-left-colors: @messageUserBlock.border-color;
+    border-right: none;
+
+    /* Hide from IE6 */
+    _display: none;
+}
+
+.messageUserBlock .arrow span
+{
+    position: absolute;
+    top: -10px;
+    left: -11px;
+
+    display: block;
+    width: 0px;
+    height: 0px;
+    line-height: 0px;
+
+    border: 10px solid transparent;
+    border-left-color: @messageAvatarHolder.background-color;
+    -moz-border-left-colors: @messageAvatarHolder.background-color;
+    border-right: none;
+}
+
+<xen:if is="@enableResponsive">
+@media (max-width:@maxResponsiveNarrowWidth)
+{
+    .Responsive .messageUserInfo
+    {
+        float: none;
+        width: auto;
+    }
+
+    .Responsive .messageUserBlock
+    {
+        overflow: hidden;
+        margin-bottom: 5px;
+        position: relative;
+    }
+
+    .Responsive .messageUserBlock div.avatarHolder
+    {
+        float: left;
+        padding: 5px;
+    }
+
+    .Responsive .messageUserBlock div.avatarHolder .avatar img
+    {
+        width: 48px;
+        height: 48px;
+    }
+
+    .Responsive .messageUserBlock h3.userText
+    {
+        margin-left: 64px;
+    }
+
+    .Responsive .messageUserBlock .userBanner
+    {
+        max-width: 150px;
+        margin-left: 0;
+        margin-right: 0;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        position: static;
+        display: inline-block;
+    }
+
+    .Responsive .messageUserBlock .userBanner span
+    {
+        display: none;
+    }
+
+    .Responsive .messageUserBlock .extraUserInfo
+    {
+        display: none;
+    }
+
+    .Responsive .messageUserBlock .arrow
+    {
+        display: none;
+    }
+}
+</xen:if>

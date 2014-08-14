@@ -1,86 +1,92 @@
+/*Adeon 28.07.2014. Fix for the big images in the messages*/
+.messageText img {
+    max-width:1024px !important
+}
+
+
 /* Badges */
 
 .badge {
-font-size: 10px;
-font-weight: bold;
-margin: -5px -5px -2px;
-text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+    margin: -5px -5px -2px;
+    text-align: center;
 }
 
 .badge li {
-position: relative;
+    position: relative;
 }
 
 .badgeArchitectureTeam {
-background: url('custom_images/badges/architect');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/architect.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeArtTeam {
-background: url('custom_images/badges/art.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/art.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeContributor {
-background: url('custom_images/badges/contributor.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/contributor.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeDesignTeam {
-background: url('custom_images/badges/design.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/design.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeWorldTeam {
-background: url('custom_images/badges/world.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/world.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeGuiTeam {
-background: url('custom_images/badges/gui.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/gui.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeLogisticsTeam {
-background: url('custom_images/badges/logistics.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/logistics.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeSpecOpsTeam {
-background: url('custom_images/badges/specOps.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/specOps.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .badgeHunterTeam {
-background: url('custom_images/badges/hunter.png');
-height: 30px;
-width: 120px;
-margin-right: auto;
-margin-left: auto;
+    background: url('custom_images/badges/hunter.png');
+    height: 30px;
+    width: 120px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 /* End Badges */
