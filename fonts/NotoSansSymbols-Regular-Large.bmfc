@@ -5,7 +5,7 @@ fileVersion=1
 fontName=Noto Sans Symbols
 fontFile=NotoSansSymbols-Regular.ttf
 charSet=0
-fontSize=52
+fontSize=20
 aa=1
 scaleH=100
 useSmoothing=1
@@ -50,6 +50,6 @@ invB=0
 outlineThickness=0
 
 # selected chars
-chars=9985-10175,127232-127242,127248-127278,127280-127339,127344-127386,127462-127487
+chars=9312-9331,9398-9450,9985-10175
 
 # imported icon images
