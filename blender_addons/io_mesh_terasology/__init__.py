@@ -1,17 +1,11 @@
 #!BPY
-"""
-Name: 'TerasologyBlockShapeExport'
-Blender: 262
-Group: 'Export'
-Tooltip: 'Export a Terasology Block Shape'
-"""
 
 bl_info = {
 	"name": "Terasology Block Shape Export",
 	"description": "Exporter for producing Terasology Block Shape files (in JSON format)",
 	"author": "Immortius",
 	"version": (1, 3),
-	"blender": (2, 6, 0),
+	"blender": (2, 6, 3),
 	"location": "File > Import-Export",
 	"category": "Import-Export"}
 

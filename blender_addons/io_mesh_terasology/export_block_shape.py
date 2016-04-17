@@ -198,10 +198,13 @@ def writeMeshPart(name,
 	else:
 		mesh = obj.data
 		
+	
+	mesh.update(calc_tessface=True)
+
 	processedVerts = []
-	processedFaces = [[] for f in range(len(mesh.faces))]
+	processedFaces = [[] for f in range(len(mesh.tessfaces))]
 		
-	for i, f in enumerate(mesh.faces):
+	for i, f in enumerate(mesh.tessfaces):
 		faceVerts = f.vertices
 		for j, index in enumerate(faceVerts):
 			vert = mesh.vertices[index]
@@ -211,7 +214,7 @@ def writeMeshPart(name,
 				normal = tuple(f.normal)
 			else:
 				normal = tuple(vert.normal)
-			uvtemp = mesh.uv_textures.active.data[i].uv[j]
+			uvtemp = mesh.tessface_uv_textures.active.data[i].uv[j]
 			uvs = uvtemp[0], 1.0 - uvtemp[1]
 			
 			processedFaces[i].append(len(processedVerts))
