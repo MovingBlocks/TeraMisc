@@ -583,21 +583,56 @@ class md5Settings:
 
 #scale = 1.0
 
+
+def find_mesh_objects(scene):
+  for currentObject in scene.objects:
+    if currentObject.type == 'MESH':
+      yield currentObject
+
+
+
+def create_mesh_object_copies_with_applied_modifiers(scene):
+  """
+  Creates copies of all mesh objects in the specified scene and applies then the 
+  edge split and mirror modifier on the copy. Afterwards it makes the mesh calculate 
+  triangle data via mesh.update(calc_tessface=True)
+  """
+  non_empty_mesh_objects = []
+  for mesh_object in find_mesh_objects(scene):
+    mesh = mesh_object.data
+    mesh.update(calc_tessface=True)
+    if len(mesh.tessfaces) > 0:
+      non_empty_mesh_objects.append(mesh_object)
+
+
+  mesh_object_copies = []
+  for mesh_object in non_empty_mesh_objects:   
+    mesh = mesh_object.data
+    if bpy.ops.object.mode_set.poll():
+        bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action = 'DESELECT')
+    scene.objects.active = mesh_object
+    mesh_object.select = True
+    bpy.ops.object.duplicate()
+    mesh_object_copy = scene.objects.active 
+    bpy.ops.object.modifier_apply (modifier='EdgeSplit')
+    bpy.ops.object.modifier_apply (modifier='Mirror')
+    scene.objects.unlink(mesh_object_copy)
+    mesh_object_copies.append(mesh_object_copy)
+  return mesh_object_copies
+
 #SERIALIZE FUNCTION
 def save_md5(settings):
   print("Exporting selected objects...")
-  bpy.ops.object.mode_set(mode='OBJECT')
   
   scale = settings.scale
-  
-  
-  
+  scene = bpy.context.scene
   thearmature = 0  #null to start, will assign in next section 
   
   #first pass on selected data, pull one skeleton
   skeleton = Skeleton(10, "Exported from Blender by io_export_md5.py by Paul Zirkle")
-  bpy.context.scene.frame_set(bpy.context.scene.frame_start)
-  for obj in bpy.context.selected_objects:
+  scene.frame_set(scene.frame_start)
+  for obj in scene.objects:
     if obj.type == 'ARMATURE':
       #skeleton.name = obj.name
       thearmature = obj
@@ -623,12 +658,11 @@ def save_md5(settings):
       break #only pull one skeleton out
   
   #second pass on selected data, pull meshes
+  mesh_objects = create_mesh_object_copies_with_applied_modifiers(scene)
   meshes = []
-  for obj in bpy.context.selected_objects:
-    if ((obj.type == 'MESH') and ( len(obj.data.vertices.values()) > 0 )):
+  for obj in mesh_objects:
       #for each non-empty mesh
       mesh = Mesh(obj.name)
-      obj.data.update(calc_tessface=True)
       print( "Processing mesh: "+ obj.name )
       meshes.append(mesh)
 
@@ -731,8 +765,11 @@ def save_md5(settings):
               
               hasFaceUV = len(uv_textures) > 0 #borrowed from export_obj.py
               
-              if hasFaceUV: 
-                uv = [uv_textures.active.data[face.index].uv[i][0], uv_textures.active.data[face.index].uv[i][1]]
+              if hasFaceUV:
+                face_data = uv_textures.active.data[face.index]
+                print("face_data %s, len face data= %s" % (face_data,len(face_data)))
+                uv_cooridate_orignal = uv_textures.active.data[face.index].uv[i]
+                uv = [uv_cooridate_orignal[0], uv_cooridate_orignal[1]]
                 uv[1] = 1.0 - uv[1]  # should we flip Y? yes, new in Blender 2.5x
                 if not vertex.maps: vertex.maps.append(Map(*uv))
                 elif (vertex.maps[0].u != uv[0]) or (vertex.maps[0].v != uv[1]):
@@ -773,10 +810,8 @@ def save_md5(settings):
     animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
 #   armature.animation_data.action = action
     bpy.context.scene.update()
-    armature = bpy.context.active_object
-    action = armature.animation_data.action
 #   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
-    framemin, framemax  = action.frame_range
+    framemin, framemax  = arm_action.frame_range
     rangestart = int(framemin)
     rangeend = int(framemax)
 #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
@@ -856,9 +891,9 @@ def save_md5(settings):
         for submesh in meshes[0].submeshes:
           if len(submesh.weights) > 0:
             obj = None
-            for sob in bpy.context.selected_objects:
-                if sob and sob.type == 'MESH' and sob.name == submesh.name:
-                  obj = sob
+            for sob in mesh_objects:
+              if sob.name == submesh.name:
+                obj = sob
             objects.append (obj)
         generateboundingbox(objects, anim, [rangestart, rangeend])
         buffer = anim.to_md5anim()
@@ -934,5 +969,6 @@ def unregister():
 
 if __name__ == "__main__":
   register()
+
 
 
