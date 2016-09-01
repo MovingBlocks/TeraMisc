@@ -655,8 +655,12 @@ def save_md5(modelFilePath=None, animationFilePath=None):
    * animationFilePath: Optional. If it is not None the current scene
                     will be exported as md5 animation file (.md5anim)
   """
-  print("Exporting selected objects...")
-  
+  print("Preparing data for MD5 export")
+  if modelFilePath != None:
+      print("Mesh will be stored at %s" % modelFilePath)
+  if animationFilePath != None:
+      print("Animation will be stored at %s" % animationFilePath)
+    
   scene = bpy.context.scene
   thearmature = 0  #null to start, will assign in next section 
   
@@ -884,9 +888,8 @@ def getTargetTerasologyAssetsDirectory(context):
     
     scene = context.scene
     preferences = context.user_preferences.addons[__name__].preferences
-    terasologyDirectory = preferences.terasology_directory
-    moduleName = scene.terasology_module_name
-    return os.path.join(terasologyDirectory, "modules", moduleName, "assets")
+    terasologyModuleDirectory = preferences.terasology_module_directory
+    return os.path.join(terasologyModuleDirectory, "assets")
 
 def getTargetTerasologyMeshFileName(context):
     modelName = getSuggestedModelName()
@@ -906,6 +909,8 @@ def getTargetTerasologyAnimFilePath(context):
     assetDirectory = getTargetTerasologyAssetsDirectory(context)
     fileName = getTargetTerasologyAnimFileName(context)
     return os.path.join(assetDirectory, "animations", fileName)
+  
+
 
 class TerasologyMD5MeshExportOperator(bpy.types.Operator):
     bl_idname      = 'md5.terasology_export_md5mesh'
@@ -951,14 +956,20 @@ class TerasologyMD5MeshAndAnimExportOperator(bpy.types.Operator):
         
         save_md5(modelFilePath, animationFilePath)
         return{'FINISHED'}
-      
+  
+def onTerasologyModulePathUpdate(self, context):
+    absolutePath = bpy.path.abspath(self.terasology_module_directory)
+    if self.terasology_module_directory != absolutePath:
+        self.terasology_module_directory = absolutePath
+    
 class TerasologyMd5AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
 
-    terasology_directory = StringProperty(
-            name="Terasology directory",
+    terasology_module_directory = StringProperty(
+            name="Terasology module directory",
             subtype='DIR_PATH',
-            description="Path of the terasology source directory that contains the modules directory"
+            description="Path to a terasology module directory",
+            update=onTerasologyModulePathUpdate
             )
     
 class TerasologyExportPanel(bpy.types.Panel):
@@ -973,11 +984,10 @@ class TerasologyExportPanel(bpy.types.Panel):
         scene = context.scene
         preferences = context.user_preferences.addons[__name__].preferences
         
-        layout.prop(preferences, "terasology_directory", text="Terasology Directory")
-        layout.prop(scene, "terasology_module_name", text="Module")
+        layout.prop(preferences, "terasology_module_directory", text="Ter. Module")
         modelName = getSuggestedModelName()
         col = layout.column()
-        col.enabled = scene.terasology_module_name != "" and preferences.terasology_directory != ""
+        col.enabled = preferences.terasology_module_directory != ""
         meshFileName = getTargetTerasologyMeshFileName(context)
         animFileName = getTargetTerasologyAnimFileName(context)
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
@@ -993,7 +1003,6 @@ def menu_func(self, context):
 def register():
   bpy.utils.register_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.append(menu_func)
-  bpy.types.Scene.terasology_module_name = bpy.props.StringProperty()
 
 def unregister():
   bpy.utils.unregister_module(__name__)  #mikshaw
