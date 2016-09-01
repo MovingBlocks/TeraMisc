@@ -880,6 +880,22 @@ class ExportMD5(bpy.types.Operator):
         WindowManager.fileselect_add(self)
         return {"RUNNING_MODAL"}  
 
+
+
+class ExportPanel(bpy.types.Panel):
+    bl_idname = "OBJECT_PT_MD5_quickExport"
+    bl_label = "MD5 Quick Export"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "scene"
+    
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        #layout.prop(scene.md5_export_options, "path", text="")
+        layout.operator(ExportMD5.bl_idname, text="Export As MD5")
+
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
   self.layout.operator(ExportMD5.bl_idname, text="idTech 4 MD5 (.md5mesh .md5anim)", icon='BLENDER').filepath = default_path
