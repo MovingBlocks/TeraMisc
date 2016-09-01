@@ -733,7 +733,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 #   armature.animation_data.action = action
     bpy.context.scene.update()
 #   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
-    framemin, framemax  = arm_action.frame_range
+    framemin, framemax  = scene.frame_start, scene.frame_end
     rangestart = int(framemin)
     rangeend = int(framemax)
 #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
@@ -741,7 +741,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
     currenttime = rangestart
     while currenttime <= rangeend: 
       bpy.context.scene.frame_set(currenttime)
-      time = (currenttime - 1.0) / 24.0 #(assuming default 24fps for md5 anim)
+      time = (currenttime - 1.0) / scene.render.fps
       pose = thearmature.pose
 
       for bonename in thearmature.data.bones.keys():
