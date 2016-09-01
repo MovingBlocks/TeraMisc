@@ -17,18 +17,9 @@
 # ***** END GPL LICENCE BLOCK *****
 #
 
-#"""
-#Name: 'Quake Model 5 (.md5)...'
-#Blender: 263
-#Group: 'Export'
-#Tooltip: 'Export a Quake Model 5 File'
-#
-#credit to der_ton for the 2.4x Blender export script
-#"""
-
 bl_info = { # changed from bl_addon_info in 2.57 -mikshaw
-    "name": "Export idTech4 (.md5)",
-    "author": "Paul Zirkle aka Keless, credit to der_ton, ported to Blender 2.62 by motorsep and tested by kat, special thanks to MCampagnini",
+    "name": "Export MD5 (.md5)",
+    "author": "Latest changes by Florian Köberle; Previous versions by Paul Zirkle aka Keless, motorsep, der_ton. Special thanks to MCampagnini, kat",
     "version": (1,0,0),
     "blender": (2, 6, 3),
     "api": 31847,
@@ -231,7 +222,6 @@ class SubMesh:
       buf=buf + "\n\tnumtris 0\n"
       buf=buf + "\n\tnumweights 0\n"
       return buf
-    
     # output vertices
     buf=buf + "\tnumverts %i\n" % (len(self.vertices))
     vnumber=0
@@ -511,11 +501,9 @@ class MD5Animation:
     
 
 def getminmax(listofpoints):
-  print ("list of points", listofpoints)
   if len(listofpoints[0]) == 0: return ([0,0,0],[0,0,0])
   min = [listofpoints[0][0], listofpoints[0][1], listofpoints[0][2]]
   max = [listofpoints[0][0], listofpoints[0][1], listofpoints[0][2]]
-  print("origianl min max", min, max)
   if len(listofpoints[0])>1:
     for i in range( len(listofpoints)):
       if listofpoints[i][0]>max[0]: max[0]=listofpoints[i][0]
@@ -525,8 +513,6 @@ def getminmax(listofpoints):
       if listofpoints[i][0]<min[0]: min[0]=listofpoints[i][0]
       if listofpoints[i][1]<min[1]: min[1]=listofpoints[i][1]
       if listofpoints[i][2]<min[2]: min[2]=listofpoints[i][2]
-      print("iter ", i, min, max)
-  print ("final ", min, max)
   return (min, max)
 
 def generateboundingbox(objects, md5animation, framerange):
@@ -621,6 +607,59 @@ def create_mesh_object_copies_with_applied_modifiers(scene):
     mesh_object_copies.append(mesh_object_copy)
   return mesh_object_copies
 
+
+def determineBoneNamesOfArmature(armatureObject):
+    boneNamesOfArmature = []
+    armature = armatureObject.data
+    for blenderBoneIndex, blenderBone in enumerate(armature.bones):
+        boneNamesOfArmature.append(blenderBone.name)
+    return boneNamesOfArmature;
+
+
+def createMd5Face(blenderFace, faceRelativeVertexIndices, blenderMesh, blenderMeshObject, md5SubMesh, objectToWorldMatrix, boneNamesOfArmature):
+    md5VerticesOfFace = []
+    for faceRelativeVertexIndex in faceRelativeVertexIndices:
+        blenderVertexIndex = blenderFace.vertices[faceRelativeVertexIndex]
+        blenderVertex = blenderMesh.vertices[blenderVertexIndex]
+        
+        absolutePosition = objectToWorldMatrix * blenderVertex.co
+
+        uvCoordinatesPerVertex = 1
+        uvLayerIndex = 0 # always 0 as we just use 1 uv layer
+        blenderAttributeName = "uv%d" % (faceRelativeVertexIndex + 1)
+        if len(blenderMesh.tessface_uv_textures) == 0:
+            raise Exception("Require at least 1 UV layer")
+        uvData = blenderMesh.tessface_uv_textures[uvLayerIndex].data[blenderFace.index]
+        blenderUVCoord = getattr(uvData, blenderAttributeName)
+        
+        normal = blenderVertex.normal
+        
+        boneNameWeightTuples = []
+        for groupEntry in blenderVertex.groups:
+            vertexGroupIndex = groupEntry.group
+            # It seems like the group data can become corrupted in Blender:
+            validGroup = vertexGroupIndex < len(blenderMeshObject.vertex_groups)
+            if vertexGroupIndex < len(blenderMeshObject.vertex_groups):
+                vertexGroup = blenderMeshObject.vertex_groups[vertexGroupIndex]
+                boneWeight = groupEntry.weight
+                if vertexGroup.name in boneNamesOfArmature and boneWeight > 0:
+                    boneName = vertexGroup.name
+                    boneNameWeightTuples.append((boneName, boneWeight))
+
+        totalWeight = 0
+        for boneName, weight in boneNameWeightTuples:
+            totalWeight += weight
+            
+        boneNameCorrectedWeightTuples = [(boneName, weight / totalWeight) for boneName, weight in boneNameWeightTuples]
+                
+        md5Vertex = Vertex(md5SubMesh, absolutePosition, normal)
+        for boneName, weight in boneNameCorrectedWeightTuples:
+          md5Bone = BONES[boneName]
+          md5Vertex.influences.append(Influence(md5Bone, weight))
+        md5Vertex.maps.append(Map(blenderUVCoord.x, 1.0 - blenderUVCoord.y))
+        md5VerticesOfFace.append(md5Vertex)
+    Face(md5SubMesh, md5VerticesOfFace[0], md5VerticesOfFace[1], md5VerticesOfFace[2])
+
 #SERIALIZE FUNCTION
 def save_md5(settings):
   print("Exporting selected objects...")
@@ -656,150 +695,37 @@ def save_md5(settings):
           treat_bone(b)
     
       break #only pull one skeleton out
+    
+  boneNamesOfArmature = determineBoneNamesOfArmature(thearmature)
+
   
   #second pass on selected data, pull meshes
   mesh_objects = create_mesh_object_copies_with_applied_modifiers(scene)
   meshes = []
-  for obj in mesh_objects:
+  for blenderMeshObject in mesh_objects:
       #for each non-empty mesh
-      mesh = Mesh(obj.name)
-      print( "Processing mesh: "+ obj.name )
-      meshes.append(mesh)
-
-      numTris = 0
-      numWeights = 0
-      for f in obj.data.polygons:
-        numTris += len(f.vertices) - 2
-      for v in obj.data.vertices:
-        numWeights += len( v.groups )
-        
-      w_matrix = obj.matrix_world
-      verts = obj.data.vertices
+      print( "Processing mesh: "+ blenderMeshObject.name )
+      md5Mesh = Mesh(blenderMeshObject.name)
+      meshes.append(md5Mesh)
       
-      uv_textures = obj.data.tessface_uv_textures
-      faces = []
-      for f in obj.data.polygons:
-        faces.append( f )
+      blenderMesh = blenderMeshObject.data
+      objectToWorldMatrix = blenderMeshObject.matrix_world
       
-      createVertexA = 0
-      createVertexB = 0
-      createVertexC = 0
-        
-      while faces:
-        material_index = faces[0].material_index
-        material = Material(obj.data.materials[0].name ) #call the shader name by the material's name
-        
-        submesh = SubMesh(mesh, material)
-        vertices = {}
-        for face in faces[:]:
-          # der_ton: i added this check to make sure a face has at least 3 vertices.
-          # (pdz) also checks for and removes duplicate verts
-          if len(face.vertices) < 3: # throw away faces that have less than 3 vertices
-            faces.remove(face)
-          elif face.vertices[0] == face.vertices[1]:  #throw away degenerate triangles
-            faces.remove(face)
-          elif face.vertices[0] == face.vertices[2]:
-            faces.remove(face)
-          elif face.vertices[1] == face.vertices[2]:
-            faces.remove(face)
-          elif face.material_index == material_index:
-            #all faces in each sub-mesh must have the same material applied
-            faces.remove(face)
-            
-            if not face.use_smooth :
-              p1 = verts[ face.vertices[0] ].co
-              p2 = verts[ face.vertices[1] ].co
-              p3 = verts[ face.vertices[2] ].co
-              normal = vector_normalize(vector_by_matrix(vector_crossproduct( \
-                [p3[0] - p2[0], p3[1] - p2[1], p3[2] - p2[2]], \
-                [p1[0] - p2[0], p1[1] - p2[1], p1[2] - p2[2]], \
-                ), w_matrix))
-            
-            #for each vertex in this face, add unique to vertices dictionary
-            face_vertices = []
-            for i in range(len(face.vertices)):
-              vertex = False
-              if face.vertices[i] in vertices: 
-                vertex = vertices[  face.vertices[i] ] #type of Vertex
-              if not vertex: #found unique vertex, add to list
-                coord  = point_by_matrix( verts[face.vertices[i]].co, w_matrix ) #TODO: fix possible bug here
-                if face.use_smooth: normal = vector_normalize(vector_by_matrix( verts[face.vertices[i]].normal, w_matrix ))
-                vertex  = vertices[face.vertices[i]] = Vertex(submesh, coord, normal) 
-                createVertexA += 1
-                
-                influences = []
-                for j in range(len( obj.data.vertices[ face.vertices[i] ].groups )):
-                  inf = [obj.vertex_groups[ obj.data.vertices[ face.vertices[i] ].groups[j].group ].name, obj.data.vertices[ face.vertices[i] ].groups[j].weight]
-                  influences.append( inf )
-                
-                if not influences:
-                  print( "There is a vertex without attachment to a bone in mesh: " + mesh.name )
-                sum = 0.0
-                for bone_name, weight in influences: sum += weight
-                
-                for bone_name, weight in influences:
-                  if sum != 0:
-                    try:
-                        vertex.influences.append(Influence(BONES[bone_name], weight / sum))
-                    except:
-                        continue
-                  else: # we have a vertex that is probably not skinned. export anyway
-                    try:
-                        vertex.influences.append(Influence(BONES[bone_name], weight))
-                    except:
-                        continue
-                
-                #print( "vert " + str( face.vertices[i] ) + " has " + str(len( vertex.influences ) ) + " influences ")
-                        
-              elif not face.use_smooth:
-                # We cannot share vertex for non-smooth faces, since Cal3D does not
-                # support vertex sharing for 2 vertices with different normals.
-                # => we must clone the vertex.
-                
-                old_vertex = vertex
-                vertex = Vertex(submesh, vertex.loc, normal)
-                createVertexB += 1
-                vertex.cloned_from = old_vertex
-                vertex.influences = old_vertex.influences
-                old_vertex.clones.append(vertex)
-              
-              hasFaceUV = len(uv_textures) > 0 #borrowed from export_obj.py
-              
-              if hasFaceUV:
-                face_data = uv_textures.active.data[face.index]
-                print("face_data %s, len face data= %s" % (face_data,len(face_data)))
-                uv_cooridate_orignal = uv_textures.active.data[face.index].uv[i]
-                uv = [uv_cooridate_orignal[0], uv_cooridate_orignal[1]]
-                uv[1] = 1.0 - uv[1]  # should we flip Y? yes, new in Blender 2.5x
-                if not vertex.maps: vertex.maps.append(Map(*uv))
-                elif (vertex.maps[0].u != uv[0]) or (vertex.maps[0].v != uv[1]):
-                  # This vertex can be shared for Blender, but not for MD5
-                  # MD5 does not support vertex sharing for 2 vertices with
-                  # different UV texture coodinates.
-                  # => we must clone the vertex.
+      md5Material = Material("FakedMaterial")
+      md5SubMesh = SubMesh(md5Mesh, md5Material)
+      blenderMesh.update(calc_tessface=True)
 
-                  for clone in vertex.clones:
-                    if (clone.maps[0].u == uv[0]) and (clone.maps[0].v == uv[1]):
-                      vertex = clone
-                      break
-                  else: # Not yet cloned...  (PDZ) note: this ELSE belongs attached to the FOR loop.. python can do that apparently
-                    old_vertex = vertex
-                    vertex = Vertex(submesh, vertex.loc, vertex.normal)
-                    createVertexC += 1
-                    vertex.cloned_from = old_vertex
-                    vertex.influences = old_vertex.influences
-                    vertex.maps.append(Map(*uv))
-                    old_vertex.clones.append(vertex)
-
-              face_vertices.append(vertex)
+      for blenderFace in blenderMesh.tessfaces:
+          if len(blenderFace.vertices) == 3 or len(blenderFace.vertices) == 4:
+              faceRelativeVertexIndices = [0,1,2]
+              createMd5Face(blenderFace, faceRelativeVertexIndices, blenderMesh, blenderMeshObject, md5SubMesh, objectToWorldMatrix, boneNamesOfArmature)
               
-            # Split faces with more than 3 vertices
-            for i in range(1, len(face.vertices) - 1):
-              Face(submesh, face_vertices[0], face_vertices[i], face_vertices[i + 1])
+              if len(blenderFace.vertices) == 4:
+                  faceRelativeVertexIndices = [0,2,3]
+                  createMd5Face(blenderFace, faceRelativeVertexIndices, blenderMesh, blenderMeshObject, md5SubMesh, objectToWorldMatrix, boneNamesOfArmature)
           else:
-            print( "found face with invalid material!!!!" )
-      print( "created verts at A " + str(createVertexA) + ", B " + str( createVertexB ) + ", C " + str( createVertexC ) )
-      
+              raise Exception("Only the export of meshes with triangles and quads has been implemented")
+
   # Export animations
   ANIMATIONS = {}
 
@@ -882,7 +808,6 @@ def save_md5(settings):
       #save animation file
       if len(ANIMATIONS)>0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
-        print( str( anim ) )
         try:
           file = open(md5anim_filename, 'w')
         except IOError:
@@ -909,7 +834,7 @@ from bpy.props import *
 class ExportMD5(bpy.types.Operator):
   '''Export to idTech 4 MD5 (.md5mesh .md5anim)'''
   bl_idname = "export.md5"
-  bl_label = 'idTech 4 MD5 test'
+  bl_label = 'MD5 Export'
   
   logenum = [("console","Console","log to console"),
              ("append","Append","append to log file"),
