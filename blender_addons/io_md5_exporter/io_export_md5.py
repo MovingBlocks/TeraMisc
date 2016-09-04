@@ -602,49 +602,67 @@ def determineBoneNamesOfArmature(armatureObject):
     return boneNamesOfArmature;
 
 
-def createMd5Face(blenderFace, faceRelativeVertexIndices, blenderMesh, blenderMeshObject, md5SubMesh, objectToWorldMatrix, boneNamesOfArmature):
-    md5VerticesOfFace = []
-    for faceRelativeVertexIndex in faceRelativeVertexIndices:
-        blenderVertexIndex = blenderFace.vertices[faceRelativeVertexIndex]
-        blenderVertex = blenderMesh.vertices[blenderVertexIndex]
-        
-        absolutePosition = objectToWorldMatrix * blenderVertex.co
-
-        uvCoordinatesPerVertex = 1
-        uvLayerIndex = 0 # always 0 as we just use 1 uv layer
-        blenderAttributeName = "uv%d" % (faceRelativeVertexIndex + 1)
-        if len(blenderMesh.tessface_uv_textures) == 0:
-            raise Exception("Require at least 1 UV layer")
-        uvData = blenderMesh.tessface_uv_textures[uvLayerIndex].data[blenderFace.index]
-        blenderUVCoord = getattr(uvData, blenderAttributeName)
-        
-        normal = blenderVertex.normal
-        
-        boneNameWeightTuples = []
-        for groupEntry in blenderVertex.groups:
-            vertexGroupIndex = groupEntry.group
-            # It seems like the group data can become corrupted in Blender:
-            validGroup = vertexGroupIndex < len(blenderMeshObject.vertex_groups)
-            if vertexGroupIndex < len(blenderMeshObject.vertex_groups):
-                vertexGroup = blenderMeshObject.vertex_groups[vertexGroupIndex]
-                boneWeight = groupEntry.weight
-                if vertexGroup.name in boneNamesOfArmature and boneWeight > 0:
-                    boneName = vertexGroup.name
-                    boneNameWeightTuples.append((boneName, boneWeight))
-
-        totalWeight = 0
-        for boneName, weight in boneNameWeightTuples:
-            totalWeight += weight
+def createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMeshObject, objectToWorldMatrix, boneNamesOfArmature, md5Mesh):    
+    md5Material = Material("FakedMaterial")
+    md5SubMesh = SubMesh(md5Mesh, md5Material)
+    vertexDataTupleToVertexMap = {}
+    for blenderFace, faceRelativeVertexIndices in blenderFacesWithRelativeVertexIndices:
+        md5VerticesOfFace = []
+        for faceRelativeVertexIndex in faceRelativeVertexIndices:
+            blenderVertexIndex = blenderFace.vertices[faceRelativeVertexIndex]
+            blenderVertex = blenderMesh.vertices[blenderVertexIndex]
             
-        boneNameCorrectedWeightTuples = [(boneName, weight / totalWeight) for boneName, weight in boneNameWeightTuples]
+            absolutePosition = objectToWorldMatrix * blenderVertex.co
+
+            uvCoordinatesPerVertex = 1
+            uvLayerIndex = 0 # always 0 as we just use 1 uv layer
+            blenderAttributeName = "uv%d" % (faceRelativeVertexIndex + 1)
+            if len(blenderMesh.tessface_uv_textures) == 0:
+                raise Exception("Require at least 1 UV layer")
+            uvData = blenderMesh.tessface_uv_textures[uvLayerIndex].data[blenderFace.index]
+            blenderUVCoord = getattr(uvData, blenderAttributeName)
+            
+            normal = blenderVertex.normal
+            
+            boneNameWeightTuples = []
+            for groupEntry in blenderVertex.groups:
+                vertexGroupIndex = groupEntry.group
+                # It seems like the group data can become corrupted in Blender:
+                validGroup = vertexGroupIndex < len(blenderMeshObject.vertex_groups)
+                if vertexGroupIndex < len(blenderMeshObject.vertex_groups):
+                    vertexGroup = blenderMeshObject.vertex_groups[vertexGroupIndex]
+                    boneWeight = groupEntry.weight
+                    if vertexGroup.name in boneNamesOfArmature and boneWeight > 0:
+                        boneName = vertexGroup.name
+                        boneNameWeightTuples.append((boneName, boneWeight))
+
+            totalWeight = 0
+            for boneName, weight in boneNameWeightTuples:
+                totalWeight += weight
                 
-        md5Vertex = Vertex(md5SubMesh, absolutePosition, normal)
-        for boneName, weight in boneNameCorrectedWeightTuples:
-          md5Bone = BONES[boneName]
-          md5Vertex.influences.append(Influence(md5Bone, weight))
-        md5Vertex.maps.append(Map(blenderUVCoord.x, 1.0 - blenderUVCoord.y))
-        md5VerticesOfFace.append(md5Vertex)
-    Face(md5SubMesh, md5VerticesOfFace[0], md5VerticesOfFace[1], md5VerticesOfFace[2])
+            boneNameCorrectedWeightTuples = [(boneName, weight / totalWeight) for boneName, weight in boneNameWeightTuples]
+                    
+                    
+            vertexIdList = []
+            vertexIdList.extend((absolutePosition.x, absolutePosition.y, absolutePosition.z))
+            vertexIdList.extend((blenderUVCoord[0], blenderUVCoord[1]))
+            vertexIdList.extend(tuple(boneNameCorrectedWeightTuples))
+            vertexIdList.extend((normal.x, normal.y, normal.z))
+            vertexIdTuple = tuple(vertexIdList)
+
+            md5Vertex = vertexDataTupleToVertexMap.get(vertexIdTuple)
+            if md5Vertex == None:
+                # Create md5 vertex
+                md5Vertex = Vertex(md5SubMesh, absolutePosition, normal)
+                for boneName, weight in boneNameCorrectedWeightTuples:
+                    md5Bone = BONES[boneName]
+                    md5Vertex.influences.append(Influence(md5Bone, weight))
+                md5Vertex.maps.append(Map(blenderUVCoord.x, 1.0 - blenderUVCoord.y))
+            
+                vertexDataTupleToVertexMap[vertexIdTuple] = md5Vertex
+            md5VerticesOfFace.append(md5Vertex)
+
+        Face(md5SubMesh, md5VerticesOfFace[0], md5VerticesOfFace[1], md5VerticesOfFace[2])
 
 #SERIALIZE FUNCTION
 def save_md5(modelFilePath=None, animationFilePath=None):
@@ -707,20 +725,20 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       blenderMesh = blenderMeshObject.data
       objectToWorldMatrix = blenderMeshObject.matrix_world
       
-      md5Material = Material("FakedMaterial")
-      md5SubMesh = SubMesh(md5Mesh, md5Material)
       blenderMesh.update(calc_tessface=True)
 
+      blenderFacesWithRelativeVertexIndices = []
       for blenderFace in blenderMesh.tessfaces:
           if len(blenderFace.vertices) == 3 or len(blenderFace.vertices) == 4:
               faceRelativeVertexIndices = [0,1,2]
-              createMd5Face(blenderFace, faceRelativeVertexIndices, blenderMesh, blenderMeshObject, md5SubMesh, objectToWorldMatrix, boneNamesOfArmature)
+              blenderFacesWithRelativeVertexIndices.append((blenderFace, faceRelativeVertexIndices))
               
               if len(blenderFace.vertices) == 4:
                   faceRelativeVertexIndices = [0,2,3]
-                  createMd5Face(blenderFace, faceRelativeVertexIndices, blenderMesh, blenderMeshObject, md5SubMesh, objectToWorldMatrix, boneNamesOfArmature)
+                  blenderFacesWithRelativeVertexIndices.append((blenderFace, faceRelativeVertexIndices))
           else:
               raise Exception("Only the export of meshes with triangles and quads has been implemented")
+      createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMeshObject, objectToWorldMatrix, boneNamesOfArmature, md5Mesh)
 
   # Export animations
   ANIMATIONS = {}
