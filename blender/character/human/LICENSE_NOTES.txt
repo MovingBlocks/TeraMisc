@@ -1,1 +1,6 @@
-The human character model has been made by MirceaKitsune and is licensed CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+The human character model is licensed CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+
+The original model has been made by MirceaKitsune, but since then it has been modified:
+
+- The way how animations are organized within the file has been adjusted. So that there is 1 scene per animation for easier export.
+- The walk animation has been made cyclic
