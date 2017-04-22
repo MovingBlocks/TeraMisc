@@ -20,7 +20,7 @@ Blender allows you to adjust the interface so that it matches your needs. There 
 * Configure yourself a rectangular region with a properties editor that has the scene tab active and the "MD5 Export to Terasology" panel active
 * In the "MD5 Export to Terasology" panel select the path of the terasology module you are working on. This path gets saved with the user preferences.
 
-TODO add screenshot
+![MD5ExporertToTerasologyPanel](images/MD5ExporertToTerasologyPanel.png "MD5 Exporter to Terasology Panel")
 
 ## Step 4: Learn how to export an existing model
 
