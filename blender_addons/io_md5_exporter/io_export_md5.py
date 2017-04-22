@@ -740,54 +740,55 @@ def save_md5(modelFilePath=None, animationFilePath=None):
               raise Exception("Only the export of meshes with triangles and quads has been implemented")
       createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMeshObject, objectToWorldMatrix, boneNamesOfArmature, md5Mesh)
 
-  # Export animations
-  ANIMATIONS = {}
+  if animationFilePath:
+    # Export animations
+    ANIMATIONS = {}
 
-  arm_action = thearmature.animation_data.action
-  rangestart = 0
-  rangeend = 0
-  if arm_action:
-    animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
-#   armature.animation_data.action = action
-    bpy.context.scene.update()
-#   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
-    framemin, framemax  = scene.frame_start, scene.frame_end
-    rangestart = int(framemin)
-    rangeend = int(framemax)
-#   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
-#   rangeend = int( bpy.context.scene.frame_end ) #int( arm_action.frame_range[1] )
-    currenttime = rangestart
-    while currenttime <= rangeend: 
-      bpy.context.scene.frame_set(currenttime)
-      time = (currenttime - 1.0) / scene.render.fps
-      pose = thearmature.pose
+    arm_action = thearmature.animation_data.action
+    rangestart = 0
+    rangeend = 0
+    if arm_action:
+      animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
+  #   armature.animation_data.action = action
+      bpy.context.scene.update()
+  #   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
+      framemin, framemax  = scene.frame_start, scene.frame_end
+      rangestart = int(framemin)
+      rangeend = int(framemax)
+  #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
+  #   rangeend = int( bpy.context.scene.frame_end ) #int( arm_action.frame_range[1] )
+      currenttime = rangestart
+      while currenttime <= rangeend: 
+        bpy.context.scene.frame_set(currenttime)
+        time = (currenttime - 1.0) / scene.render.fps
+        pose = thearmature.pose
 
-      for bonename in thearmature.data.bones.keys():
-        posebonemat = mathutils.Matrix(pose.bones[bonename].matrix ) # @ivar poseMatrix: The total transformation of this PoseBone including constraints. -- different from localMatrix
+        for bonename in thearmature.data.bones.keys():
+          posebonemat = mathutils.Matrix(pose.bones[bonename].matrix ) # @ivar poseMatrix: The total transformation of this PoseBone including constraints. -- different from localMatrix
 
-        try:
-          bone  = BONES[bonename] #look up md5bone
-        except:
-          print( "found a posebone animating a bone that is not part of the exported armature: " + bonename )
-          continue
-        if bone.parent: # need parentspace-matrix
-          parentposemat = mathutils.Matrix(pose.bones[bone.parent.name].matrix ) # @ivar poseMatrix: The total transformation of this PoseBone including constraints. -- different from localMatrix
-#         posebonemat = parentposemat.invert() * posebonemat #reverse order of multiplication!!!
-          parentposemat.invert() # mikshaw
-          posebonemat = parentposemat * posebonemat # mikshaw
-        else:
-          posebonemat = thearmature.matrix_world * posebonemat  #reverse order of multiplication!!!
-        loc = [posebonemat.col[3][0],
-            posebonemat.col[3][1],
-            posebonemat.col[3][2],
-            ]
-#       rot = posebonemat.to_quat().normalize()
-        rot = posebonemat.to_quaternion() # changed from to_quat in 2.57 -mikshaw
-        rot.normalize() # mikshaw
-        rot = [rot.w,rot.x,rot.y,rot.z]
-        
-        animation.addkeyforbone(bone.id, time, loc, rot)
-      currenttime += 1
+          try:
+            bone  = BONES[bonename] #look up md5bone
+          except:
+            print( "found a posebone animating a bone that is not part of the exported armature: " + bonename )
+            continue
+          if bone.parent: # need parentspace-matrix
+            parentposemat = mathutils.Matrix(pose.bones[bone.parent.name].matrix ) # @ivar poseMatrix: The total transformation of this PoseBone including constraints. -- different from localMatrix
+  #         posebonemat = parentposemat.invert() * posebonemat #reverse order of multiplication!!!
+            parentposemat.invert() # mikshaw
+            posebonemat = parentposemat * posebonemat # mikshaw
+          else:
+            posebonemat = thearmature.matrix_world * posebonemat  #reverse order of multiplication!!!
+          loc = [posebonemat.col[3][0],
+              posebonemat.col[3][1],
+              posebonemat.col[3][2],
+              ]
+  #       rot = posebonemat.to_quat().normalize()
+          rot = posebonemat.to_quaternion() # changed from to_quat in 2.57 -mikshaw
+          rot.normalize() # mikshaw
+          rot = [rot.w,rot.x,rot.y,rot.z]
+          
+          animation.addkeyforbone(bone.id, time, loc, rot)
+        currenttime += 1
         
   # here begins md5mesh and anim output
   # this is how it works
