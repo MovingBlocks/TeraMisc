@@ -33,6 +33,7 @@ bl_info = { # changed from bl_addon_info in 2.57 -mikshaw
 
 import bpy,struct,math,os,time,sys,mathutils
 
+
 #MATH UTILTY
 
 def vector_crossproduct(v1, v2):
@@ -547,7 +548,7 @@ def generateboundingbox(objects, md5animation, framerange):
           [0.0,  0.0, 0.0, 1.0],
           ]
         for v in bbox:
-            #print("v",v)
+            # print("v",v)
             corners.append(point_by_matrix (v, matrix))
             #print("corners", corners)
     (min, max) = getminmax(corners)
@@ -663,6 +664,11 @@ def createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMes
             md5VerticesOfFace.append(md5Vertex)
 
         Face(md5SubMesh, md5VerticesOfFace[0], md5VerticesOfFace[1], md5VerticesOfFace[2])
+
+def checkPath(filePath):#python does not create directory just the file. This function added to create t eh directory
+  dir=os.path.dirname(filePath)
+  if not os.path.exists(dir):
+    os.makedirs(dir)
 
 #SERIALIZE FUNCTION
 def save_md5(modelFilePath=None, animationFilePath=None):
@@ -801,26 +807,35 @@ def save_md5(modelFilePath=None, animationFilePath=None):
         for mesh in range (1, len(meshes)):
           for submesh in meshes[mesh].submeshes:
             submesh.bindtomesh(meshes[0])
+      checkPath(modelFilePath)#python does not create directory just the file. This function added to create t eh directory
       try:
         file = open(modelFilePath, 'w')
-      except IOError:
-        errmsg = "IOError " #%s: %s" % (errno, strerror)
+      except Exception as e:
+        print(str(e))
+        # errmsg = "IOError " #%s: %s" % (errno, strerror)
       buffer = skeleton.to_md5mesh(len(meshes[0].submeshes))
-      #for mesh in meshes:
       buffer = buffer + meshes[0].to_md5mesh()
       file.write(buffer)
       file.close()
       print( "saved mesh to " + modelFilePath )
 
 
-  if animationFilePath:
+  if animationFilePath:   
       #save animation file
+      if modelFilePath == None:
+        if len(meshes)>1:
+          for mesh in range (1, len(meshes)):
+            for submesh in meshes[mesh].submeshes:
+              submesh.bindtomesh(meshes[0])
       if len(ANIMATIONS)>0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
+        checkPath(animationFilePath)#python does not create directory just the file. This function added to create t eh directory
         try:
           file = open(animationFilePath, 'w')
-        except IOError:
-          errmsg = "IOError " #%s: %s" % (errno, strerror)
+        except Exception as e:
+          print(str(e))
+          # errmsg = "IOError " #%s: %s" % (errno, strerror)  
+        meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
         objects = []
         for submesh in meshes[0].submeshes:
           if len(submesh.weights) > 0:
@@ -866,7 +881,8 @@ class ExportMD5(bpy.types.Operator):
   md5name = StringProperty(name="MD5 Name", description="MD3 header name / skin path (64 bytes)",maxlen=64,default="")
   md5exportList = EnumProperty(name="Exports", items=exportModes, description="Choose export mode.", default='mesh & anim')
   #md5logtype = EnumProperty(name="Save log", items=logenum, description="File logging options",default = 'console')
-  md5scale = FloatProperty(name="Scale", description="Scale all objects from world origin (0,0,0)", min=0.001, max=1000.0, default=1.0,precision=6)
+  bpy.types.Scene.md5scale = FloatProperty(name="Scale", description="Scale all objects from world origin (0,0,0)", default=1.0,precision=5)
+
   #md5offsetx = FloatProperty(name="Offset X", description="Transition scene along x axis",default=0.0,precision=5)
   #md5offsety = FloatProperty(name="Offset Y", description="Transition scene along y axis",default=0.0,precision=5)
   #md5offsetz = FloatProperty(name="Offset Z", description="Transition scene along z axis",default=0.0,precision=5)
@@ -886,7 +902,6 @@ class ExportMD5(bpy.types.Operator):
         animationFilePath = self.properties.filepath + ".md5anim"
     else:
         animationFilePath = None
-    
     save_md5(modelFilePath, animationFilePath)
     return {'FINISHED'}
 
@@ -960,6 +975,50 @@ class TerasologyMD5AnimExportOperator(bpy.types.Operator):
         
         save_md5(modelFilePath, animationFilePath)
         return{'FINISHED'}
+
+
+def findAnimation(animName):
+  for anim in bpy.data.actions:
+    if animName in anim:
+      flag=1
+      return anim
+
+  return null
+
+
+import json,os
+from collections import OrderedDict
+class ExportPrefabForTerasology(bpy.types.Operator):
+  bl_idname="export.prefab"
+  bl_label="Export a prefab for Terasology"
+
+  def invoke(self, context, event):
+    current_file_dir=os.path.dirname(__file__)
+    file_in_path=os.path.join(current_file_dir,"template.prefab")
+    with open(file_in_path, 'r') as inFile:
+      data = json.load(inFile, object_pairs_hook=OrderedDict)
+
+    ModelName=getSuggestedModelName()
+
+    data["skeletalmesh"]["mesh"]=ModelName
+    data["skeletalmesh"]["material"]=ModelName+"Skin"
+    data["skeletalmesh"]["animation"]=ModelName+"Idle"#later check if the animation actually exists
+    data["WildAnimal"]["name"]=ModelName[:1].upper()+ModelName[1:]
+    data["WildAnimal"]["icon"]="WildAnimals:"+ModelName+"Icon"
+    # data["Die"]["animationPool"]="["+findAnimation("death")+"]"
+    assetDirectory=getTargetTerasologyAssetsDirectory(context)
+    FileName=ModelName+".prefab"
+    checkPath(assetDirectory)
+    print("Exporting prefab at: "+assetDirectory)
+    with open(os.path.join(assetDirectory,FileName),"w") as outFile:
+      json.dump(data, outFile, indent=2)
+
+    return{'FINISHED'}
+
+
+
+  
+
       
 class TerasologyMD5MeshAndAnimExportOperator(bpy.types.Operator):
     bl_idname      = 'md5.terasology_export_md5'
@@ -1009,11 +1068,15 @@ class TerasologyExportPanel(bpy.types.Panel):
         col.enabled = preferences.terasology_module_directory != ""
         meshFileName = getTargetTerasologyMeshFileName(context)
         animFileName = getTargetTerasologyAnimFileName(context)
+        # value=context.scene.Scale
+        # value=ExportMD5.md5scale.Scale
+        # print("^^^^^^^^^^^",value)
+        # col.prop(ExportMD5.md5scale,"Scale")  
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
         col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export " + animFileName)
+        col.operator("export.prefab",text="Export prefab file")
         col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
-        
-        layout.label(text="Note: Blend & scene name deterines file name")
+        layout.label(text="Note: Blend & scene naermines file name")
 
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
@@ -1029,6 +1092,5 @@ def unregister():
 
 if __name__ == "__main__":
   register()
-
 
 
