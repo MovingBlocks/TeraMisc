@@ -665,10 +665,11 @@ def createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMes
 
         Face(md5SubMesh, md5VerticesOfFace[0], md5VerticesOfFace[1], md5VerticesOfFace[2])
 
-def checkPath(filePath):#python does not create directory just the file. This function added to create t eh directory
-  dir=os.path.dirname(filePath)
-  if not os.path.exists(dir):
-    os.makedirs(dir)
+def createDirectoryForFileIfMissing(filePath):
+  """Function check if the directory is present, if not then creates one"""
+  directory=os.path.dirname(filePath)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
 
 #SERIALIZE FUNCTION
 def save_md5(modelFilePath=None, animationFilePath=None):
@@ -803,16 +804,15 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 
   if modelFilePath != None:
       #save all submeshes in the first mesh
-      if len(meshes)>1:
+      if len(meshes) > 1:
         for mesh in range (1, len(meshes)):
           for submesh in meshes[mesh].submeshes:
             submesh.bindtomesh(meshes[0])
-      checkPath(modelFilePath)#python does not create directory just the file. This function added to create t eh directory
+      createDirectoryForFileIfMissing(modelFilePath)
       try:
         file = open(modelFilePath, 'w')
-      except Exception as e:
-        print(str(e))
-        # errmsg = "IOError " #%s: %s" % (errno, strerror)
+      except:
+        pass
       buffer = skeleton.to_md5mesh(len(meshes[0].submeshes))
       buffer = buffer + meshes[0].to_md5mesh()
       file.write(buffer)
@@ -820,7 +820,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       print( "saved mesh to " + modelFilePath )
 
 
-  if animationFilePath:   
+  if animationFilePath:
       #save animation file
       if modelFilePath == None:
         if len(meshes)>1:
@@ -829,12 +829,11 @@ def save_md5(modelFilePath=None, animationFilePath=None):
               submesh.bindtomesh(meshes[0])
       if len(ANIMATIONS)>0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
-        checkPath(animationFilePath)#python does not create directory just the file. This function added to create t eh directory
+        createDirectoryForFileIfMissing(animationFilePath)
         try:
           file = open(animationFilePath, 'w')
-        except Exception as e:
-          print(str(e))
-          # errmsg = "IOError " #%s: %s" % (errno, strerror)  
+        except:
+          pass
         meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
         objects = []
         for submesh in meshes[0].submeshes:
@@ -983,7 +982,7 @@ def findAnimation(animName):
       flag=1
       return anim
 
-  return null
+  return None
 
 
 import json,os
@@ -993,24 +992,24 @@ class ExportPrefabForTerasology(bpy.types.Operator):
   bl_label="Export a prefab for Terasology"
 
   def invoke(self, context, event):
-    current_file_dir=os.path.dirname(__file__)
+    current_file_dir = os.path.dirname(__file__)
     file_in_path=os.path.join(current_file_dir,"template.prefab")
     with open(file_in_path, 'r') as inFile:
       data = json.load(inFile, object_pairs_hook=OrderedDict)
 
-    ModelName=getSuggestedModelName()
+    modelName=getSuggestedModelName()
 
-    data["skeletalmesh"]["mesh"]=ModelName
-    data["skeletalmesh"]["material"]=ModelName+"Skin"
-    data["skeletalmesh"]["animation"]=ModelName+"Idle"#later check if the animation actually exists
-    data["WildAnimal"]["name"]=ModelName[:1].upper()+ModelName[1:]
-    data["WildAnimal"]["icon"]="WildAnimals:"+ModelName+"Icon"
+    data["skeletalmesh"]["mesh"] = modelName
+    data["skeletalmesh"]["material"] = modelName+"Skin"
+    data["skeletalmesh"]["animation"] = modelName+"Idle"#later check if the animation actually exists
+    data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
+    data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
     # data["Die"]["animationPool"]="["+findAnimation("death")+"]"
-    assetDirectory=getTargetTerasologyAssetsDirectory(context)
-    FileName=ModelName+".prefab"
-    checkPath(assetDirectory)
+    assetDirectory = getTargetTerasologyAssetsDirectory(context)
+    fileName=modelName+".prefab"
+    createDirectoryForFileIfMissing(assetDirectory)
     print("Exporting prefab at: "+assetDirectory)
-    with open(os.path.join(assetDirectory,FileName),"w") as outFile:
+    with open(os.path.join(assetDirectory,fileName),"w") as outFile:
       json.dump(data, outFile, indent=2)
 
     return{'FINISHED'}
@@ -1049,6 +1048,34 @@ class TerasologyMd5AddonPreferences(bpy.types.AddonPreferences):
             description="Path to a terasology module directory",
             update=onTerasologyModulePathUpdate
             )
+
+class actionlist_UL(UIList):
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        layer = item
+        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+            layout.prop(layer, "name", text="", icon_value=icon, emboss=False)
+            layout.prop(layer, "enabled", text="", index=index)
+        elif self.layout_type == 'GRID':
+            layout.alignment = 'CENTER'
+            layout.label("", icon_value=icon)
+
+    def invoke(self, context, event):
+      pass
+
+class action_poplulate(bpy.types.Operator):
+  bl_idname="scene.populate"
+  bl_label="Refresh action list"
+
+  def execute(self, context):
+
+    context.scene.action_group.clear()
+
+    for anim in bpy.data.actions:
+      item = context.scene.action_group.add()
+      item.name = anim.name
+      item.enabled = False
+    return{'FINISHED'}
     
 class TerasologyExportPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_MD5_terasologyExport"
@@ -1067,16 +1094,14 @@ class TerasologyExportPanel(bpy.types.Panel):
         col = layout.column()
         col.enabled = preferences.terasology_module_directory != ""
         meshFileName = getTargetTerasologyMeshFileName(context)
-        animFileName = getTargetTerasologyAnimFileName(context)
-        # value=context.scene.Scale
-        # value=ExportMD5.md5scale.Scale
-        # print("^^^^^^^^^^^",value)
-        # col.prop(ExportMD5.md5scale,"Scale")  
+        animFileName = getTargetTerasologyAnimFileName(context) 
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
         col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export " + animFileName)
+        col.operator("scene.populate")
+        col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
         col.operator("export.prefab",text="Export prefab file")
         col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
-        layout.label(text="Note: Blend & scene naermines file name")
+        layout.label(text="Note: Blend & scene name determines file name")
 
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
@@ -1085,10 +1110,14 @@ def menu_func(self, context):
 def register():
   bpy.utils.register_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.append(menu_func)
+  bpy.types.Scene.action_group = CollectionProperty(type=CustomProp)
+  bpy.types.Scene.action_list_index = bpy.props.IntProperty()
 
 def unregister():
   bpy.utils.unregister_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.remove(menu_func)
+  del bpy.types.Scene.action_group
+  del bpy.types.Scene.action_list_index
 
 if __name__ == "__main__":
   register()
