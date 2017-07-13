@@ -204,11 +204,11 @@ class SubMesh:
     for face in self.faces:
       for face2 in self.faces:
         if not face == face2:
-          if (not face.vertex1==face2.vertex1) and (not face.vertex1==face2.vertex2) and (not face.vertex1==face2.vertex3):
+          if (not face.vertex1 == face2.vertex1) and (not face.vertex1 == face2.vertex2) and (not face.vertex1 == face2.vertex3):
             return
-          if (not face.vertex2==face2.vertex1) and (not face.vertex2==face2.vertex2) and (not face.vertex2==face2.vertex3):
+          if (not face.vertex2 == face2.vertex1) and (not face.vertex2 == face2.vertex2) and (not face.vertex2 == face2.vertex3):
             return
-          if (not face.vertex3==face2.vertex1) and (not face.vertex3==face2.vertex2) and (not face.vertex3==face2.vertex3):
+          if (not face.vertex3 == face2.vertex1) and (not face.vertex3 == face2.vertex2) and (not face.vertex3 == face2.vertex3):
             return
           print('doubleface! %s %s' % (face, face2))
           
@@ -431,8 +431,8 @@ class MD5Animation:
   def to_md5anim(self):
     currentframedataindex = 0
     for bone in self.skeleton.bones:
-      if (len(self.framedata[bone.id])>0):
-        if (len(self.framedata[bone.id])>self.numframes):
+      if (len(self.framedata[bone.id]) > 0):
+        if (len(self.framedata[bone.id]) > self.numframes):
           self.numframes=len(self.framedata[bone.id])
         (x,y,z),(qw,qx,qy,qz) = self.framedata[bone.id][0]
         self.baseframe[bone.id]= (x*scale,y*scale,z*scale,qx,qy,qz)
@@ -485,9 +485,9 @@ class MD5Animation:
     for f in range(0, self.numframes):
       buf = buf + "frame %i {\n" % (f)
       for b in self.skeleton.bones:
-        if (len(self.framedata[b.id])>0):
+        if (len(self.framedata[b.id]) > 0):
           (x,y,z),(qw,qx,qy,qz) = self.framedata[b.id][f]
-          if qw>0:
+          if qw > 0:
             qx,qy,qz = -qx,-qy,-qz
           buf = buf + "\t%f %f %f %f %f %f\n" % (x*scale, y*scale, z*scale, qx,qy,qz)
       buf = buf + "}\n\n"
@@ -505,7 +505,7 @@ def getminmax(listofpoints):
   if len(listofpoints[0]) == 0: return ([0,0,0],[0,0,0])
   min = [listofpoints[0][0], listofpoints[0][1], listofpoints[0][2]]
   max = [listofpoints[0][0], listofpoints[0][1], listofpoints[0][2]]
-  if len(listofpoints[0])>1:
+  if len(listofpoints[0]) > 1:
     for i in range( len(listofpoints)):
       if listofpoints[i][0]>max[0]: max[0]=listofpoints[i][0]
       if listofpoints[i][1]>max[1]: max[1]=listofpoints[i][1]
@@ -667,7 +667,7 @@ def createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMes
 
 def createDirectoryForFileIfMissing(filePath):
   """Function check if the directory is present, if not then creates one"""
-  directory=os.path.dirname(filePath)
+  directory = os.path.dirname(filePath)
   if not os.path.exists(directory):
     os.makedirs(directory)
 
@@ -700,7 +700,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       
       #define recursive bone parsing function
       def treat_bone(b, parent = None):
-        if (parent and not b.parent.name==parent.name):
+        if (parent and not b.parent.name == parent.name):
           return #only catch direct children
         
         mat =  mathutils.Matrix(w_matrix) * mathutils.Matrix(b.matrix_local)  #reversed order of multiplication from 2.4 to 2.5!!! ARRRGGG
@@ -809,10 +809,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
           for submesh in meshes[mesh].submeshes:
             submesh.bindtomesh(meshes[0])
       createDirectoryForFileIfMissing(modelFilePath)
-      try:
-        file = open(modelFilePath, 'w')
-      except:
-        pass
+      file = open(modelFilePath, 'w')
       buffer = skeleton.to_md5mesh(len(meshes[0].submeshes))
       buffer = buffer + meshes[0].to_md5mesh()
       file.write(buffer)
@@ -823,17 +820,14 @@ def save_md5(modelFilePath=None, animationFilePath=None):
   if animationFilePath:
       #save animation file
       if modelFilePath == None:
-        if len(meshes)>1:
+        if len(meshes) > 1:
           for mesh in range (1, len(meshes)):
             for submesh in meshes[mesh].submeshes:
               submesh.bindtomesh(meshes[0])
-      if len(ANIMATIONS)>0:
+      if len(ANIMATIONS) > 0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
         createDirectoryForFileIfMissing(animationFilePath)
-        try:
-          file = open(animationFilePath, 'w')
-        except:
-          pass
+        file = open(animationFilePath, 'w')
         meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
         objects = []
         for submesh in meshes[0].submeshes:
@@ -853,7 +847,9 @@ def save_md5(modelFilePath=None, animationFilePath=None):
   
 ##########
 #export class registration and interface
+import bpy
 from bpy.props import *
+from bpy.types import Panel, UIList
 class ExportMD5(bpy.types.Operator):
   '''Export to idTech 4 MD5 (.md5mesh .md5anim)'''
   bl_idname = "export.md5"
@@ -1107,6 +1103,10 @@ def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
   self.layout.operator(ExportMD5.bl_idname, text="idTech 4 MD5 (.md5mesh .md5anim)", icon='BLENDER').filepath = default_path
   
+class CustomProp(bpy.types.PropertyGroup):
+  name = StringProperty()
+  enabled = BoolProperty()
+
 def register():
   bpy.utils.register_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.append(menu_func)
