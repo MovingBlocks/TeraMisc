@@ -683,8 +683,9 @@ def save_md5(modelFilePath=None, animationFilePath=None):
   print("Preparing data for MD5 export")
   if modelFilePath != None:
       print("Mesh will be stored at %s" % modelFilePath)
-  if animationFilePath != None:
-      print("Animation will be stored at %s" % animationFilePath)
+  for anim in bpy.context.scene.action_group:
+    if anim.enabled:
+      print("Exporting selected animtions: ", anim.name)
     
   scene = bpy.context.scene
   thearmature = 0  #null to start, will assign in next section 
@@ -750,18 +751,33 @@ def save_md5(modelFilePath=None, animationFilePath=None):
   if animationFilePath:
     # Export animations
     ANIMATIONS = {}
-
+    if not thearmature.animation_data:
+      thearmature.animation_data_create()
     arm_action = thearmature.animation_data.action
-    rangestart = 0
-    rangeend = 0
-    if arm_action:
+
+    for a in bpy.context.scene.action_group:
+      if not a.enabled:
+        continue
+
+      arm_action = bpy.data.actions.get(a.name, False)
+      if not arm_action:
+        continue
+
+      if len(arm_action.pose_markers) < 2:
+        frame_range = (int(arm_action.frame_range[0]), int(arm_action.frame_range[1]))
+      else:
+        pm_frames = [pm.frame for pm in arm_action.pose_markers]
+        frame_range = (min(pm_frames), max(pm_frames))
+
+      rangestart = frame_range[0]
+      rangeend = frame_range[1]
       animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
   #   armature.animation_data.action = action
       bpy.context.scene.update()
   #   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
       framemin, framemax  = scene.frame_start, scene.frame_end
-      rangestart = int(framemin)
-      rangeend = int(framemax)
+      # rangestart = int(framemin)
+      # rangeend = int(framemax)
   #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
   #   rangeend = int( bpy.context.scene.frame_end ) #int( arm_action.frame_range[1] )
       currenttime = rangestart
@@ -780,7 +796,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
             continue
           if bone.parent: # need parentspace-matrix
             parentposemat = mathutils.Matrix(pose.bones[bone.parent.name].matrix ) # @ivar poseMatrix: The total transformation of this PoseBone including constraints. -- different from localMatrix
-  #         posebonemat = parentposemat.invert() * posebonemat #reverse order of multiplication!!!
+  #       posebonemat = parentposemat.invert() * posebonemat #reverse order of multiplication!!!
             parentposemat.invert() # mikshaw
             posebonemat = parentposemat * posebonemat # mikshaw
           else:
@@ -789,14 +805,41 @@ def save_md5(modelFilePath=None, animationFilePath=None):
               posebonemat.col[3][1],
               posebonemat.col[3][2],
               ]
-  #       rot = posebonemat.to_quat().normalize()
+  #     rot = posebonemat.to_quat().normalize()
           rot = posebonemat.to_quaternion() # changed from to_quat in 2.57 -mikshaw
           rot.normalize() # mikshaw
           rot = [rot.w,rot.x,rot.y,rot.z]
           
           animation.addkeyforbone(bone.id, time, loc, rot)
         currenttime += 1
-        
+
+      if modelFilePath == None:
+        if len(meshes) > 1:
+          for mesh in range (1, len(meshes)):
+            for submesh in meshes[mesh].submeshes:
+              submesh.bindtomesh(meshes[0])
+      if len(ANIMATIONS) > 0:
+        anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
+        createDirectoryForFileIfMissing(animationFilePath)
+        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName()+a.name+".md5")
+        print(animationFilePath)
+        file = open(animationFilePath, 'w')
+        meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
+        objects = []
+        for submesh in meshes[0].submeshes:
+          if len(submesh.weights) > 0:
+            obj = None
+            for sob in mesh_objects:
+              if sob.name == submesh.name:
+                obj = sob
+            objects.append (obj)
+        generateboundingbox(objects, anim, [rangestart, rangeend])
+        buffer = anim.to_md5anim()
+        file.write(buffer)
+        file.close()
+        print( "saved anim to " + animationFilePath )
+      else:
+        print( "No md5anim file was generated." )  
   # here begins md5mesh and anim output
   # this is how it works
   # first the skeleton is output, using the data that was collected by the above code in this export function
@@ -816,34 +859,6 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       file.close()
       print( "saved mesh to " + modelFilePath )
 
-
-  if animationFilePath:
-      #save animation file
-      if modelFilePath == None:
-        if len(meshes) > 1:
-          for mesh in range (1, len(meshes)):
-            for submesh in meshes[mesh].submeshes:
-              submesh.bindtomesh(meshes[0])
-      if len(ANIMATIONS) > 0:
-        anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
-        createDirectoryForFileIfMissing(animationFilePath)
-        file = open(animationFilePath, 'w')
-        meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
-        objects = []
-        for submesh in meshes[0].submeshes:
-          if len(submesh.weights) > 0:
-            obj = None
-            for sob in mesh_objects:
-              if sob.name == submesh.name:
-                obj = sob
-            objects.append (obj)
-        generateboundingbox(objects, anim, [rangestart, rangeend])
-        buffer = anim.to_md5anim()
-        file.write(buffer)
-        file.close()
-        print( "saved anim to " + animationFilePath )
-      else:
-        print( "No md5anim file was generated." )
   
 ##########
 #export class registration and interface
@@ -980,33 +995,74 @@ def findAnimation(animName):
 
   return None
 
-
-import json,os
+import os,json
 from collections import OrderedDict
+def exportPrefabForTerasology():
+  current_file_dir = os.path.dirname(__file__)
+  file_in_path=os.path.join(current_file_dir,"template.prefab")
+  with open(file_in_path, 'r') as inFile:
+    data = json.load(inFile, object_pairs_hook=OrderedDict)
+
+  modelName=getSuggestedModelName()
+
+  data["skeletalmesh"]["mesh"] = modelName
+  data["skeletalmesh"]["material"] = modelName+"Skin"
+  data["skeletalmesh"]["animation"] = modelName+"Idle"#later check if the animation actually exists
+  data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
+  data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
+  # data["Die"]["animationPool"]="["+findAnimation("death")+"]"
+  assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
+  prefabDirectory = os.path.join(assetDirectory,"prefab")
+  fileName = modelName+".prefab"
+  createDirectoryForFileIfMissing(os.path.join(prefabDirectory,fileName))
+  print("Exporting prefab at: "+prefabDirectory)
+  with open(os.path.join(prefabDirectory,fileName),"w") as outFile:
+    json.dump(data, outFile, indent=2)
+
+  return None
+
+
 class ExportPrefabForTerasology(bpy.types.Operator):
-  bl_idname="export.prefab"
-  bl_label="Export a prefab for Terasology"
+  bl_idname = "export.prefab"
+  bl_label = "Export a prefab for Terasology"
 
   def invoke(self, context, event):
-    current_file_dir = os.path.dirname(__file__)
-    file_in_path=os.path.join(current_file_dir,"template.prefab")
-    with open(file_in_path, 'r') as inFile:
-      data = json.load(inFile, object_pairs_hook=OrderedDict)
+    exportPrefabForTerasology()
 
-    modelName=getSuggestedModelName()
+    return{'FINISHED'}
 
-    data["skeletalmesh"]["mesh"] = modelName
-    data["skeletalmesh"]["material"] = modelName+"Skin"
-    data["skeletalmesh"]["animation"] = modelName+"Idle"#later check if the animation actually exists
-    data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
-    data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
-    # data["Die"]["animationPool"]="["+findAnimation("death")+"]"
+
+import zipfile,os
+class ExportZipFileForTerasology(bpy.types.Operator):
+  bl_idname = "create.zipfile"
+  bl_label =  "Create a ZipFile for exporting the content"
+  def invoke(self, context, event):
+    global scale # TODO get rid of it, using a global variable is no good style..
+    scale = 1.0
+    
+    modelFilePath = getTargetTerasologyMeshFilePath(context)
+    animationFilePath = getTargetTerasologyAnimFilePath(context)
+        
+    save_md5(modelFilePath, animationFilePath)
+    exportPrefabForTerasology()
     assetDirectory = getTargetTerasologyAssetsDirectory(context)
-    fileName=modelName+".prefab"
-    createDirectoryForFileIfMissing(assetDirectory)
-    print("Exporting prefab at: "+assetDirectory)
-    with open(os.path.join(assetDirectory,fileName),"w") as outFile:
-      json.dump(data, outFile, indent=2)
+    dire =  os.path.join(os.path.dirname(assetDirectory), 'assets.zip')
+    zipf = zipfile.ZipFile(dire, 'w', zipfile.ZIP_DEFLATED)
+
+    for root, dirs, files in os.walk(assetDirectory):
+
+        if root.replace(assetDirectory,'') == '':
+          prefix = ''
+        else:
+          prefix = root.replace(assetDirectory, '') + '/'
+          if prefix[0] == '/' :
+            prefix = prefix[1:]
+        for file in files:
+            filePath = root + '/' + file
+            inZipPath = prefix + file
+            zipf.write(filePath, inZipPath)
+    print("Export .zip at ", os.path.dirname(assetDirectory))
+    zipf.close()
 
     return{'FINISHED'}
 
@@ -1092,12 +1148,13 @@ class TerasologyExportPanel(bpy.types.Panel):
         meshFileName = getTargetTerasologyMeshFileName(context)
         animFileName = getTargetTerasologyAnimFileName(context) 
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
-        col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export " + animFileName)
         col.operator("scene.populate")
         col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
+        col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export Selected Animations" )
         col.operator("export.prefab",text="Export prefab file")
-        col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
-        layout.label(text="Note: Blend & scene name determines file name")
+        col.operator("create.zipfile",text ="Export ZipFile")
+        # col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
+        layout.label(text="Note: Blend & scene name determines model file name")
 
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
