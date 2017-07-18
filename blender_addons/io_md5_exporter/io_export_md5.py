@@ -753,7 +753,8 @@ def save_md5(modelFilePath=None, animationFilePath=None):
     ANIMATIONS = {}
     if not thearmature.animation_data:
       thearmature.animation_data_create()
-    arm_action = thearmature.animation_data.action
+
+    orig_action = thearmature.animation_data.action
 
     for a in bpy.context.scene.action_group:
       if not a.enabled:
@@ -762,7 +763,6 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       arm_action = bpy.data.actions.get(a.name, False)
       if not arm_action:
         continue
-
       if len(arm_action.pose_markers) < 2:
         frame_range = (int(arm_action.frame_range[0]), int(arm_action.frame_range[1]))
       else:
@@ -821,7 +821,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       if len(ANIMATIONS) > 0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
         createDirectoryForFileIfMissing(animationFilePath)
-        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName()+a.name+".md5")
+        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName()+a.name+".md5anim")
         print(animationFilePath)
         file = open(animationFilePath, 'w')
         meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
@@ -840,6 +840,9 @@ def save_md5(modelFilePath=None, animationFilePath=None):
         print( "saved anim to " + animationFilePath )
       else:
         print( "No md5anim file was generated." )  
+
+  thearmature.animation_data.action = orig_action
+
   # here begins md5mesh and anim output
   # this is how it works
   # first the skeleton is output, using the data that was collected by the above code in this export function
