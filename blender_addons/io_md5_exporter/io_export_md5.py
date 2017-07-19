@@ -841,7 +841,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       else:
         print( "No md5anim file was generated." )  
 
-  thearmature.animation_data.action = orig_action
+    thearmature.animation_data.action = orig_action
 
   # here begins md5mesh and anim output
   # this is how it works
