@@ -1,0 +1,86 @@
+[irc]
+    [irc.freenode]
+    Server="irc.freenode.net:6667"
+    Nick="gooey-bridge"
+    #RemoteNickFormat defines how remote users appear on this bridge 
+    #OPTIONAL (default empty)
+    RemoteNickFormat="[{PROTOCOL}] {NOPINGNICK}: "
+    ShowJoinPart=false
+
+[slack]
+    [slack.terasology]
+    #REQUIRED (when not using webhooks)
+    Token="[Some Slack Token]"
+
+    #Icon that will be showed in slack
+    #OPTIONAL
+    IconURL="https://robohash.org/{NICK}.png?size=96x96"
+
+    #how to format the list of IRC nicks when displayed in slack
+    #OPTIONAL (default plain)
+    NickFormatter="plain"
+    #OPTIONAL (default 4)
+    NicksPerRow=4
+
+    #Disable sending of edits to other bridges
+    EditDisable=true
+
+    #Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
+    PrefixMessagesWithNick=false
+
+    #Nicks you want to ignore. 
+    IgnoreNicks=""
+
+    #RemoteNickFormat defines how remote users appear on this bridge 
+    #OPTIONAL (default empty)
+    RemoteNickFormat="[{PROTOCOL}] {NICK}"
+
+    ShowJoinPart=false
+
+[discord]
+    [discord.terasology]
+    #Token to connect with Discord API
+    #REQUIRED
+    Token="[Some Discord Token]"
+
+    #REQUIRED
+    Server="Terasology"
+
+    #Shows title, description and URL of embedded messages (sent by other bots)
+    #OPTIONAL (default false)
+    ShowEmbeds=false
+
+    #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
+    #OPTIONAL (default empty)
+    WebhookURL="[Some Discord Webhook]"
+
+    #Disable sending of edits to other bridges
+    EditDisable=true
+
+    #Nicks you want to ignore. 
+    IgnoreNicks=""
+
+    #RemoteNickFormat defines how remote users appear on this bridge 
+    #OPTIONAL (default empty)
+    RemoteNickFormat="[{PROTOCOL}] {NICK}"
+
+    #Enable to show users joins/parts from other bridges 
+    #OPTIONAL (default false)
+    ShowJoinPart=false
+
+    IconURL="https://robohash.org/{NICK}.png?size=96x96"
+
+[[gateway]]
+name="main"
+enable=true
+    [[gateway.inout]]
+    account="irc.freenode"
+    channel="#terasology"
+
+    [[gateway.inout]]
+    account="slack.terasology"
+    channel="general"
+
+    [[gateway.inout]]
+    account="discord.terasology"
+    channel="general"
