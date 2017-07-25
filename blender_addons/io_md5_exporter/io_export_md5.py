@@ -19,7 +19,7 @@
 
 bl_info = { # changed from bl_addon_info in 2.57 -mikshaw
     "name": "MD5 exporter for Terasology (.md5)",
-    "author": "Latest changes by Florian Köberle; Previous versions by Paul Zirkle aka Keless, motorsep, der_ton. Special thanks to MCampagnini, kat",
+    "author": "Latest changes made by Kartikey Agrawal, previous changes by Florian Köberle; Previous versions by Paul Zirkle aka Keless, motorsep, der_ton. Special thanks to MCampagnini, kat",
     "version": (1,0,0),
     "blender": (2, 6, 3),
     "api": 31847,
@@ -32,6 +32,7 @@ bl_info = { # changed from bl_addon_info in 2.57 -mikshaw
     "category": "Import-Export"}
 
 import bpy,struct,math,os,time,sys,mathutils
+
 
 #MATH UTILTY
 
@@ -203,11 +204,11 @@ class SubMesh:
     for face in self.faces:
       for face2 in self.faces:
         if not face == face2:
-          if (not face.vertex1==face2.vertex1) and (not face.vertex1==face2.vertex2) and (not face.vertex1==face2.vertex3):
+          if (not face.vertex1 == face2.vertex1) and (not face.vertex1 == face2.vertex2) and (not face.vertex1 == face2.vertex3):
             return
-          if (not face.vertex2==face2.vertex1) and (not face.vertex2==face2.vertex2) and (not face.vertex2==face2.vertex3):
+          if (not face.vertex2 == face2.vertex1) and (not face.vertex2 == face2.vertex2) and (not face.vertex2 == face2.vertex3):
             return
-          if (not face.vertex3==face2.vertex1) and (not face.vertex3==face2.vertex2) and (not face.vertex3==face2.vertex3):
+          if (not face.vertex3 == face2.vertex1) and (not face.vertex3 == face2.vertex2) and (not face.vertex3 == face2.vertex3):
             return
           print('doubleface! %s %s' % (face, face2))
           
@@ -430,8 +431,8 @@ class MD5Animation:
   def to_md5anim(self):
     currentframedataindex = 0
     for bone in self.skeleton.bones:
-      if (len(self.framedata[bone.id])>0):
-        if (len(self.framedata[bone.id])>self.numframes):
+      if (len(self.framedata[bone.id]) > 0):
+        if (len(self.framedata[bone.id]) > self.numframes):
           self.numframes=len(self.framedata[bone.id])
         (x,y,z),(qw,qx,qy,qz) = self.framedata[bone.id][0]
         self.baseframe[bone.id]= (x*scale,y*scale,z*scale,qx,qy,qz)
@@ -484,9 +485,9 @@ class MD5Animation:
     for f in range(0, self.numframes):
       buf = buf + "frame %i {\n" % (f)
       for b in self.skeleton.bones:
-        if (len(self.framedata[b.id])>0):
+        if (len(self.framedata[b.id]) > 0):
           (x,y,z),(qw,qx,qy,qz) = self.framedata[b.id][f]
-          if qw>0:
+          if qw > 0:
             qx,qy,qz = -qx,-qy,-qz
           buf = buf + "\t%f %f %f %f %f %f\n" % (x*scale, y*scale, z*scale, qx,qy,qz)
       buf = buf + "}\n\n"
@@ -504,7 +505,7 @@ def getminmax(listofpoints):
   if len(listofpoints[0]) == 0: return ([0,0,0],[0,0,0])
   min = [listofpoints[0][0], listofpoints[0][1], listofpoints[0][2]]
   max = [listofpoints[0][0], listofpoints[0][1], listofpoints[0][2]]
-  if len(listofpoints[0])>1:
+  if len(listofpoints[0]) > 1:
     for i in range( len(listofpoints)):
       if listofpoints[i][0]>max[0]: max[0]=listofpoints[i][0]
       if listofpoints[i][1]>max[1]: max[1]=listofpoints[i][1]
@@ -547,7 +548,7 @@ def generateboundingbox(objects, md5animation, framerange):
           [0.0,  0.0, 0.0, 1.0],
           ]
         for v in bbox:
-            #print("v",v)
+            # print("v",v)
             corners.append(point_by_matrix (v, matrix))
             #print("corners", corners)
     (min, max) = getminmax(corners)
@@ -664,6 +665,12 @@ def createSubMesh(blenderFacesWithRelativeVertexIndices, blenderMesh, blenderMes
 
         Face(md5SubMesh, md5VerticesOfFace[0], md5VerticesOfFace[1], md5VerticesOfFace[2])
 
+def createDirectoryForFileIfMissing(filePath):
+  """Function check if the directory is present, if not then creates one"""
+  directory = os.path.dirname(filePath)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
 #SERIALIZE FUNCTION
 def save_md5(modelFilePath=None, animationFilePath=None):
   """
@@ -676,8 +683,9 @@ def save_md5(modelFilePath=None, animationFilePath=None):
   print("Preparing data for MD5 export")
   if modelFilePath != None:
       print("Mesh will be stored at %s" % modelFilePath)
-  if animationFilePath != None:
-      print("Animation will be stored at %s" % animationFilePath)
+  for anim in bpy.context.scene.action_group:
+    if anim.enabled:
+      print("Exporting selected animtions: ", anim.name)
     
   scene = bpy.context.scene
   thearmature = 0  #null to start, will assign in next section 
@@ -693,7 +701,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       
       #define recursive bone parsing function
       def treat_bone(b, parent = None):
-        if (parent and not b.parent.name==parent.name):
+        if (parent and not b.parent.name == parent.name):
           return #only catch direct children
         
         mat =  mathutils.Matrix(w_matrix) * mathutils.Matrix(b.matrix_local)  #reversed order of multiplication from 2.4 to 2.5!!! ARRRGGG
@@ -742,19 +750,35 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 
   if animationFilePath:
     # Export animations
-    ANIMATIONS = {}
+    if not thearmature.animation_data:
+      thearmature.animation_data_create()
 
-    arm_action = thearmature.animation_data.action
-    rangestart = 0
-    rangeend = 0
-    if arm_action:
+    orig_action = thearmature.animation_data.action
+
+    for a in bpy.context.scene.action_group:
+      if not a.enabled:
+        continue
+
+      arm_action = bpy.data.actions.get(a.name)
+      if not arm_action:
+        continue
+      if len(arm_action.pose_markers) < 2:
+        frame_range = (int(arm_action.frame_range[0]), int(arm_action.frame_range[1]))
+      else:
+        pm_frames = [pm.frame for pm in arm_action.pose_markers]
+        frame_range = (min(pm_frames), max(pm_frames))
+
+      rangestart = frame_range[0]
+      rangeend = frame_range[1]
+      thearmature.animation_data.action = arm_action
+      ANIMATIONS = {}
       animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
   #   armature.animation_data.action = action
-      bpy.context.scene.update()
-  #   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
-      framemin, framemax  = scene.frame_start, scene.frame_end
-      rangestart = int(framemin)
-      rangeend = int(framemax)
+      # bpy.context.scene.update()
+      # framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
+      # framemin, framemax  = scene.frame_start, scene.frame_end
+      # rangestart = int(framemin)
+      # rangeend = int(framemax)
   #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
   #   rangeend = int( bpy.context.scene.frame_end ) #int( arm_action.frame_range[1] )
       currenttime = rangestart
@@ -773,7 +797,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
             continue
           if bone.parent: # need parentspace-matrix
             parentposemat = mathutils.Matrix(pose.bones[bone.parent.name].matrix ) # @ivar poseMatrix: The total transformation of this PoseBone including constraints. -- different from localMatrix
-  #         posebonemat = parentposemat.invert() * posebonemat #reverse order of multiplication!!!
+  #       posebonemat = parentposemat.invert() * posebonemat #reverse order of multiplication!!!
             parentposemat.invert() # mikshaw
             posebonemat = parentposemat * posebonemat # mikshaw
           else:
@@ -782,45 +806,26 @@ def save_md5(modelFilePath=None, animationFilePath=None):
               posebonemat.col[3][1],
               posebonemat.col[3][2],
               ]
-  #       rot = posebonemat.to_quat().normalize()
+  #     rot = posebonemat.to_quat().normalize()
           rot = posebonemat.to_quaternion() # changed from to_quat in 2.57 -mikshaw
           rot.normalize() # mikshaw
           rot = [rot.w,rot.x,rot.y,rot.z]
           
           animation.addkeyforbone(bone.id, time, loc, rot)
         currenttime += 1
-        
-  # here begins md5mesh and anim output
-  # this is how it works
-  # first the skeleton is output, using the data that was collected by the above code in this export function
-  # then the mesh data is output (into the same md5mesh file)
 
-  if modelFilePath != None:
-      #save all submeshes in the first mesh
-      if len(meshes)>1:
-        for mesh in range (1, len(meshes)):
-          for submesh in meshes[mesh].submeshes:
-            submesh.bindtomesh(meshes[0])
-      try:
-        file = open(modelFilePath, 'w')
-      except IOError:
-        errmsg = "IOError " #%s: %s" % (errno, strerror)
-      buffer = skeleton.to_md5mesh(len(meshes[0].submeshes))
-      #for mesh in meshes:
-      buffer = buffer + meshes[0].to_md5mesh()
-      file.write(buffer)
-      file.close()
-      print( "saved mesh to " + modelFilePath )
-
-
-  if animationFilePath:
-      #save animation file
-      if len(ANIMATIONS)>0:
+      if modelFilePath == None:
+        if len(meshes) > 1:
+          for mesh in range (1, len(meshes)):
+            for submesh in meshes[mesh].submeshes:
+              submesh.bindtomesh(meshes[0])
+      if len(ANIMATIONS) > 0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
-        try:
-          file = open(animationFilePath, 'w')
-        except IOError:
-          errmsg = "IOError " #%s: %s" % (errno, strerror)
+        createDirectoryForFileIfMissing(animationFilePath)
+        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName()+a.name+".md5anim")
+        print(animationFilePath)
+        file = open(animationFilePath, 'w')
+        meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
         objects = []
         for submesh in meshes[0].submeshes:
           if len(submesh.weights) > 0:
@@ -835,11 +840,35 @@ def save_md5(modelFilePath=None, animationFilePath=None):
         file.close()
         print( "saved anim to " + animationFilePath )
       else:
-        print( "No md5anim file was generated." )
+        print( "No md5anim file was generated." )  
+
+    thearmature.animation_data.action = orig_action
+
+  # here begins md5mesh and anim output
+  # this is how it works
+  # first the skeleton is output, using the data that was collected by the above code in this export function
+  # then the mesh data is output (into the same md5mesh file)
+
+  if modelFilePath != None:
+      #save all submeshes in the first mesh
+      if len(meshes) > 1:
+        for mesh in range (1, len(meshes)):
+          for submesh in meshes[mesh].submeshes:
+            submesh.bindtomesh(meshes[0])
+      createDirectoryForFileIfMissing(modelFilePath)
+      file = open(modelFilePath, 'w')
+      buffer = skeleton.to_md5mesh(len(meshes[0].submeshes))
+      buffer = buffer + meshes[0].to_md5mesh()
+      file.write(buffer)
+      file.close()
+      print( "saved mesh to " + modelFilePath )
+
   
 ##########
 #export class registration and interface
+import bpy
 from bpy.props import *
+from bpy.types import Panel, UIList
 class ExportMD5(bpy.types.Operator):
   '''Export to idTech 4 MD5 (.md5mesh .md5anim)'''
   bl_idname = "export.md5"
@@ -866,7 +895,8 @@ class ExportMD5(bpy.types.Operator):
   md5name = StringProperty(name="MD5 Name", description="MD3 header name / skin path (64 bytes)",maxlen=64,default="")
   md5exportList = EnumProperty(name="Exports", items=exportModes, description="Choose export mode.", default='mesh & anim')
   #md5logtype = EnumProperty(name="Save log", items=logenum, description="File logging options",default = 'console')
-  md5scale = FloatProperty(name="Scale", description="Scale all objects from world origin (0,0,0)", min=0.001, max=1000.0, default=1.0,precision=6)
+  bpy.types.Scene.md5scale = FloatProperty(name="Scale", description="Scale all objects from world origin (0,0,0)", default=1.0,precision=5)
+
   #md5offsetx = FloatProperty(name="Offset X", description="Transition scene along x axis",default=0.0,precision=5)
   #md5offsety = FloatProperty(name="Offset Y", description="Transition scene along y axis",default=0.0,precision=5)
   #md5offsetz = FloatProperty(name="Offset Z", description="Transition scene along z axis",default=0.0,precision=5)
@@ -886,7 +916,6 @@ class ExportMD5(bpy.types.Operator):
         animationFilePath = self.properties.filepath + ".md5anim"
     else:
         animationFilePath = None
-    
     save_md5(modelFilePath, animationFilePath)
     return {'FINISHED'}
 
@@ -960,6 +989,91 @@ class TerasologyMD5AnimExportOperator(bpy.types.Operator):
         
         save_md5(modelFilePath, animationFilePath)
         return{'FINISHED'}
+
+
+def findAnimation(animName):
+  for anim in bpy.data.actions:
+    if animName in anim:
+      flag=1
+      return anim
+
+  return None
+
+import os,json
+from collections import OrderedDict
+def exportPrefabForTerasology():
+  current_file_dir = os.path.dirname(__file__)
+  file_in_path=os.path.join(current_file_dir,"template.prefab")
+  with open(file_in_path, 'r') as inFile:
+    data = json.load(inFile, object_pairs_hook=OrderedDict)
+
+  modelName=getSuggestedModelName()
+
+  data["skeletalmesh"]["mesh"] = modelName
+  data["skeletalmesh"]["material"] = modelName+"Skin"
+  data["skeletalmesh"]["animation"] = modelName+"Idle"#later check if the animation actually exists
+  data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
+  data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
+  # data["Die"]["animationPool"]="["+findAnimation("death")+"]"
+  assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
+  prefabDirectory = os.path.join(assetDirectory,"prefab")
+  fileName = modelName+".prefab"
+  createDirectoryForFileIfMissing(os.path.join(prefabDirectory,fileName))
+  print("Exporting prefab at: "+prefabDirectory)
+  with open(os.path.join(prefabDirectory,fileName),"w") as outFile:
+    json.dump(data, outFile, indent=2)
+
+  return None
+
+
+class ExportPrefabForTerasology(bpy.types.Operator):
+  bl_idname = "export.prefab"
+  bl_label = "Export a prefab for Terasology"
+
+  def invoke(self, context, event):
+    exportPrefabForTerasology()
+
+    return{'FINISHED'}
+
+
+import zipfile,os
+class ExportZipFileForTerasology(bpy.types.Operator):
+  bl_idname = "create.zipfile"
+  bl_label =  "Create a ZipFile for exporting the content"
+  def invoke(self, context, event):
+    global scale # TODO get rid of it, using a global variable is no good style..
+    scale = 1.0
+    
+    modelFilePath = getTargetTerasologyMeshFilePath(context)
+    animationFilePath = getTargetTerasologyAnimFilePath(context)
+        
+    save_md5(modelFilePath, animationFilePath)
+    exportPrefabForTerasology()
+    assetDirectory = getTargetTerasologyAssetsDirectory(context)
+    dire =  os.path.join(os.path.dirname(assetDirectory), 'assets.zip')
+    zipf = zipfile.ZipFile(dire, 'w', zipfile.ZIP_DEFLATED)
+
+    for root, dirs, files in os.walk(assetDirectory):
+
+        if root.replace(assetDirectory,'') == '':
+          prefix = ''
+        else:
+          prefix = root.replace(assetDirectory, '') + '/'
+          if prefix[0] == '/' :
+            prefix = prefix[1:]
+        for file in files:
+            filePath = root + '/' + file
+            inZipPath = prefix + file
+            zipf.write(filePath, inZipPath)
+    print("Export .zip at ", os.path.dirname(assetDirectory))
+    zipf.close()
+
+    return{'FINISHED'}
+
+
+
+  
+
       
 class TerasologyMD5MeshAndAnimExportOperator(bpy.types.Operator):
     bl_idname      = 'md5.terasology_export_md5'
@@ -990,6 +1104,34 @@ class TerasologyMd5AddonPreferences(bpy.types.AddonPreferences):
             description="Path to a terasology module directory",
             update=onTerasologyModulePathUpdate
             )
+
+class actionlist_UL(UIList):
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        layer = item
+        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+            layout.prop(layer, "name", text="", icon_value=icon, emboss=False)
+            layout.prop(layer, "enabled", text="", index=index)
+        elif self.layout_type == 'GRID':
+            layout.alignment = 'CENTER'
+            layout.label("", icon_value=icon)
+
+    def invoke(self, context, event):
+      pass
+
+class action_poplulate(bpy.types.Operator):
+  bl_idname="scene.populate"
+  bl_label="Refresh action list"
+
+  def execute(self, context):
+
+    context.scene.action_group.clear()
+
+    for anim in bpy.data.actions:
+      item = context.scene.action_group.add()
+      item.name = anim.name
+      item.enabled = False
+    return{'FINISHED'}
     
 class TerasologyExportPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_MD5_terasologyExport"
@@ -1008,27 +1150,37 @@ class TerasologyExportPanel(bpy.types.Panel):
         col = layout.column()
         col.enabled = preferences.terasology_module_directory != ""
         meshFileName = getTargetTerasologyMeshFileName(context)
-        animFileName = getTargetTerasologyAnimFileName(context)
+        animFileName = getTargetTerasologyAnimFileName(context) 
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
-        col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export " + animFileName)
-        col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
-        
-        layout.label(text="Note: Blend & scene name deterines file name")
+        col.operator("scene.populate")
+        col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
+        col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export Selected Animations" )
+        col.operator("export.prefab",text="Export prefab file")
+        col.operator("create.zipfile",text ="Export ZipFile")
+        # col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
+        layout.label(text="Note: Blend & scene name determines model file name")
 
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
   self.layout.operator(ExportMD5.bl_idname, text="idTech 4 MD5 (.md5mesh .md5anim)", icon='BLENDER').filepath = default_path
   
+class CustomProp(bpy.types.PropertyGroup):
+  name = StringProperty()
+  enabled = BoolProperty()
+
 def register():
   bpy.utils.register_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.append(menu_func)
+  bpy.types.Scene.action_group = CollectionProperty(type=CustomProp)
+  bpy.types.Scene.action_list_index = bpy.props.IntProperty()
 
 def unregister():
   bpy.utils.unregister_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.remove(menu_func)
+  del bpy.types.Scene.action_group
+  del bpy.types.Scene.action_list_index
 
 if __name__ == "__main__":
   register()
-
 
 

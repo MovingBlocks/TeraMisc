@@ -1,0 +1,78 @@
+{
+  "skeletalmesh" : {
+    "mesh" : "",
+    "heightOffset" : -0.8,
+    "material" : "",
+    "animation" : "",
+    "loop" : true
+  },
+  "Behavior" : {
+    "tree" : "stray"
+  },
+  "FleeOnHit" : {
+    "minDistance" : 5,
+    "speedMultiplier" : 1.2
+  },
+  "StrayIfIdle" : {
+    "defaultSpeedMultiplier" : 0.3
+  },
+  "BlockDropGrammar": {
+    "blockDrops": [],
+    "itemDrops": ["2*WildAnimals:meat"]
+  },
+  "Stand" :{
+    "animationPool": [
+      "deerIdle",
+      "deerIdle",
+      "deerIdle",
+      "deerIdleLookLeft",
+      "deerIdleLookRight",
+      "deerIdleMoveLegs"
+      ]
+  },
+  "Walk" :{
+    "animationPool": ["deerWalk"]
+  },
+  "Die" :{
+    "animationPool": ["deerFall"]
+  },
+  "persisted" : true,
+  "location" : {},
+  "Character" : {},
+  "AliveCharacter": {},
+  "WildAnimal" : {
+    "name": "",
+    "icon": ""
+  },
+  "NPCMovement" : {},
+  "CreatureNameGenerator" : {
+    "genderRatio" : 0.5,
+    "nobility" : 0.5,
+    "theme": "DWARF"
+  },
+  "CharacterMovement" : {
+    "groundFriction" : 16,
+    "speedMultiplier" : 0.3,
+    "distanceBetweenFootsteps" : 0.2,
+    "distanceBetweenSwimStrokes" : 2.5,
+    "height" : 1.6,
+    "radius" : 0.3,
+    "jumpSpeed" : 12
+  },
+  "CharacterSound" : {
+    "footstepSounds" : ["FootGrass1", "FootGrass2", "FootGrass3", "FootGrass4", "FootGrass5"],
+    "footstepVolume" : 0.03
+  },
+  "Network" :{},
+  "MinionMove" : {},
+  "Health" : {
+    "destroyEntityOnNoHealth" : true,
+    "currentHealth": 7
+  },
+  "BoxShape" : {
+    "extents" : [1.5, 1.5, 1.5]
+  },
+  "Trigger" : {
+    "detectGroups" : ["engine:debris", "engine:sensor"]
+  }
+}
