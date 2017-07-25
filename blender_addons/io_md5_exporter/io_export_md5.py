@@ -19,7 +19,7 @@
 
 bl_info = { # changed from bl_addon_info in 2.57 -mikshaw
     "name": "MD5 exporter for Terasology (.md5)",
-    "author": "Latest changes by Florian Köberle; Previous versions by Paul Zirkle aka Keless, motorsep, der_ton. Special thanks to MCampagnini, kat",
+    "author": "Latest changes made by Kartikey Agrawal, previous changes by Florian Köberle; Previous versions by Paul Zirkle aka Keless, motorsep, der_ton. Special thanks to MCampagnini, kat",
     "version": (1,0,0),
     "blender": (2, 6, 3),
     "api": 31847,
@@ -750,7 +750,6 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 
   if animationFilePath:
     # Export animations
-    ANIMATIONS = {}
     if not thearmature.animation_data:
       thearmature.animation_data_create()
 
@@ -760,7 +759,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       if not a.enabled:
         continue
 
-      arm_action = bpy.data.actions.get(a.name, False)
+      arm_action = bpy.data.actions.get(a.name)
       if not arm_action:
         continue
       if len(arm_action.pose_markers) < 2:
@@ -771,11 +770,13 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 
       rangestart = frame_range[0]
       rangeend = frame_range[1]
+      thearmature.animation_data.action = arm_action
+      ANIMATIONS = {}
       animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
   #   armature.animation_data.action = action
-      bpy.context.scene.update()
-  #   framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
-      framemin, framemax  = scene.frame_start, scene.frame_end
+      # bpy.context.scene.update()
+      # framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
+      # framemin, framemax  = scene.frame_start, scene.frame_end
       # rangestart = int(framemin)
       # rangeend = int(framemax)
   #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
