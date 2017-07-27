@@ -1007,7 +1007,7 @@ def exportPrefabForTerasology():
   with open(file_in_path, 'r') as inFile:
     data = json.load(inFile, object_pairs_hook=OrderedDict)
 
-  modelName=getSuggestedModelName()
+  modelName = getSuggestedModelName()
 
   data["skeletalmesh"]["mesh"] = modelName
   data["skeletalmesh"]["material"] = modelName+"Skin"
@@ -1015,16 +1015,36 @@ def exportPrefabForTerasology():
   data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
   data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
   # data["Die"]["animationPool"]="["+findAnimation("death")+"]"
+
   assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
-  prefabDirectory = os.path.join(assetDirectory,"prefab")
+  prefabDirectory = os.path.join(assetDirectory,"prefabs")
   fileName = modelName+".prefab"
   createDirectoryForFileIfMissing(os.path.join(prefabDirectory,fileName))
-  print("Exporting prefab at: "+prefabDirectory)
+  print("Exporting prefab at: " + prefabDirectory)
   with open(os.path.join(prefabDirectory,fileName),"w") as outFile:
     json.dump(data, outFile, indent=2)
 
   return None
 
+def exportMaterialForTerasology():
+  current_file_dir = os.path.dirname(__file__)
+  file_in_path=os.path.join(current_file_dir,"templateSkin.mat")
+  with open(file_in_path, 'r') as inFile:
+    data = json.load(inFile, object_pairs_hook=OrderedDict)
+
+  modelName = getSuggestedModelName()
+
+  data["params"]["diffuse"] = modelName
+
+  assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
+  materialDirectory = os.path.join(assetDirectory,"materials")
+  fileName = modelName+"Skin.mat"
+  createDirectoryForFileIfMissing(os.path.join(materialDirectory,fileName))
+  print("Exporting material file at: " + materialDirectory)
+  with open(os.path.join(materialDirectory,fileName),"w") as outFile:
+    json.dump(data, outFile, indent=2)
+
+  return None
 
 class ExportPrefabForTerasology(bpy.types.Operator):
   bl_idname = "export.prefab"
@@ -1035,8 +1055,16 @@ class ExportPrefabForTerasology(bpy.types.Operator):
 
     return{'FINISHED'}
 
+class ExportMaterialForTerasology(bpy.types.Operator):
+  bl_idname = "export.material"
+  bl_label = "Export a material for Terasology"
 
-import zipfile,os
+  def invoke(self, context, event):
+    exportMaterialForTerasology()
+
+    return{'FINISHED'}
+
+import zipfile,os,tempfile
 class ExportZipFileForTerasology(bpy.types.Operator):
   bl_idname = "create.zipfile"
   bl_label =  "Create a ZipFile for exporting the content"
@@ -1155,7 +1183,8 @@ class TerasologyExportPanel(bpy.types.Panel):
         col.operator("scene.populate")
         col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
         col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export Selected Animations" )
-        col.operator("export.prefab",text="Export prefab file")
+        col.operator("export.prefab", text="Export prefab file")
+        col.operator("export.material", text="Export material file")
         col.operator("create.zipfile",text ="Export ZipFile")
         # col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
         layout.label(text="Note: Blend & scene name determines model file name")
