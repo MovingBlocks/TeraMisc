@@ -874,7 +874,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
         for mesh in range (1, len(meshes)):
           for submesh in meshes[mesh].submeshes:
             submesh.bindtomesh(meshes[0])
-      # createDirectoryForFileIfMissing(modelFilePath)
+      createDirectoryForFileIfMissing(modelFilePath)
       with open(modelFilePath, "w+") as file:
       # file = open(modelFilePath, 'w+')
         buffer = skeleton.to_md5mesh(len(meshes[0].submeshes))
@@ -1167,10 +1167,14 @@ class ExportZipFileForTerasology(bpy.types.Operator):
 
   def execute(self, context):
     print(self.properties.filepath)
+    global scale
+    scale = 1.0
     zipExportPath = self.properties.filepath + ".zip"
 
     zipf = zipfile.ZipFile(zipExportPath, 'w', zipfile.ZIP_DEFLATED)
     modelName = getSuggestedModelName()
+    modelFileName = modelName + ".md5mesh"
+    animationFileName = modelName + ".md5anim"
     prefabFileName = modelName.lower() + ".prefab"
     textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
     materialFileName = modelName.lower() + "Skin.mat"
@@ -1180,9 +1184,22 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     exportTextureForTerasology(dirpath, self.report)
     zipf.write(os.path.join(dirpath,"textures",textureFileName), "assets/textures/"+textureFileName)
     exportPrefabForTerasology(dirpath, self.report)
-    zipf.write(os.path.join(dirpath,"prefabs",prefabFileName), "assets/prefabs/"+prefabFileName)
+    zipf.write(os.path.join(dirpath, "prefabs", prefabFileName), "assets/prefabs/"+prefabFileName)
     exportMaterialForTerasology(dirpath, self.report)
-    zipf.write(os.path.join(dirpath,"materials",materialFileName), "assets/materials/"+materialFileName)
+    zipf.write(os.path.join(dirpath, "materials", materialFileName), "assets/materials/"+materialFileName)
+    populateActionList(context)
+    save_md5(os.path.join(dirpath, "skeletalMesh", modelFileName), os.path.join(dirpath, "animations", animationFileName))
+    zipf.write(os.path.join(dirpath, "skeletalMesh", modelFileName), "assets/skeletalMesh/" + modelFileName)
+    for dirpath,dirs,files in os.walk(os.path.join(dirpath, "animations")):
+      i = 0;
+      for f in files:
+        fn = os.path.join(dirpath, f)
+        print("@@@@@@@@@@@@@", fn)
+        zipf.write(fn, "/assets/animations/" + context.scene.action_group[i].name+".md5anim")
+        context.scene.action_group[i].name
+        i = i+1
+    # zipf.write(os.path.join(dirpath, "animations"), "assets/animations/")
+
     zipf.close()
     # shutil.rmtree(dirpath)
     # with TemporaryDirectory() as tempDir:
@@ -1309,18 +1326,21 @@ class actionlist_UL(UIList):
     def invoke(self, context, event):
       pass
 
+def populateActionList(context):
+  context.scene.action_group.clear()
+
+  for anim in bpy.data.actions:
+    item = context.scene.action_group.add()
+    item.name = anim.name
+    item.enabled = True
+  return{'FINISHED'}
+
 class action_poplulate(bpy.types.Operator):
   bl_idname="scene.populate"
   bl_label="Refresh action list"
 
   def execute(self, context):
-
-    context.scene.action_group.clear()
-
-    for anim in bpy.data.actions:
-      item = context.scene.action_group.add()
-      item.name = anim.name
-      item.enabled = False
+    populateActionList(context)
     return{'FINISHED'}
     
 class TerasologyExportPanel(bpy.types.Panel):
@@ -1349,7 +1369,7 @@ class TerasologyExportPanel(bpy.types.Panel):
         col.operator("export.prefab", text="Export prefab file")
         col.operator("export.texture", text="Export texture file")
         col.operator("export.material", text="Export material file")
-        col.operator("create.zipfile")
+        # col.operator("create.zipfile")
         # col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
         layout.label(text="Note: Blend & scene name determines model file name")
 
