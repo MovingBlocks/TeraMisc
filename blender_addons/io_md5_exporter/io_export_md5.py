@@ -1369,7 +1369,7 @@ class TerasologyExportPanel(bpy.types.Panel):
         col.operator("export.prefab", text="Export prefab file")
         col.operator("export.texture", text="Export texture file")
         col.operator("export.material", text="Export material file")
-        # col.operator("create.zipfile")
+        col.operator("create.zipfile")
         # col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
         layout.label(text="Note: Blend & scene name determines model file name")
 
