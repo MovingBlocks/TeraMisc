@@ -596,7 +596,6 @@ def create_mesh_object_copies_with_applied_modifiers(scene):
     if len(mesh.tessfaces) > 0:
       non_empty_mesh_objects.append(mesh_object)
 
-
   mesh_object_copies = []
   for mesh_object in non_empty_mesh_objects:   
     mesh = mesh_object.data
@@ -702,9 +701,9 @@ def save_md5(modelFilePath=None, animationFilePath=None):
   print("Preparing data for MD5 export")
   if modelFilePath != None:
       print("Mesh will be stored at %s" % modelFilePath)
-  for anim in bpy.context.scene.action_group:
-    if anim.enabled:
-      print("Exporting selected animtions: ", anim.name)
+  # for anim in bpy.context.scene.action_group:
+  #   if anim.enabled:
+  #     print("Exporting selected animations: ", anim.name)
     
   scene = bpy.context.scene
   thearmature = 0  #null to start, will assign in next section 
@@ -718,18 +717,20 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       thearmature = obj
       w_matrix = obj.matrix_world
       
+      # thearmature.select
+
       #define recursive bone parsing function
       def treat_bone(b, parent = None):
         if (parent and not b.parent.name == parent.name):
           return #only catch direct children
-        
+
         mat =  mathutils.Matrix(w_matrix) * mathutils.Matrix(b.matrix_local)  #reversed order of multiplication from 2.4 to 2.5!!! ARRRGGG
         
         bone = Bone(skeleton, parent, b.name, mat, b)
         
         if( b.children ):
           for child in b.children: treat_bone(child, bone)
-          
+
       for b in thearmature.data.bones:
         if( not b.parent ): #only treat root bones'
           print( "root bone: " + b.name )
@@ -739,7 +740,6 @@ def save_md5(modelFilePath=None, animationFilePath=None):
     
   boneNamesOfArmature = determineBoneNamesOfArmature(thearmature)
 
-  
   #second pass on selected data, pull meshes
   mesh_objects = create_mesh_object_copies_with_applied_modifiers(scene)
   meshes = []
@@ -748,7 +748,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       print( "Processing mesh: "+ blenderMeshObject.name )
       md5Mesh = Mesh(blenderMeshObject.name)
       meshes.append(md5Mesh)
-      
+
       blenderMesh = blenderMeshObject.data
       objectToWorldMatrix = blenderMeshObject.matrix_world
       
@@ -774,13 +774,12 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 
     orig_action = thearmature.animation_data.action
 
-    for a in bpy.context.scene.action_group:
-      if not a.enabled:
+    for action in bpy.context.screen.action_group:
+      if not action.enabled:
         continue
 
-      arm_action = bpy.data.actions.get(a.name)
-      if not arm_action:
-        continue
+      bpy.context.screen.scene = bpy.data.scenes[action.name]
+      arm_action = bpy.data.actions.get(action.name)
       if len(arm_action.pose_markers) < 2:
         frame_range = (int(arm_action.frame_range[0]), int(arm_action.frame_range[1]))
       else:
@@ -841,7 +840,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       if len(ANIMATIONS) > 0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
         createDirectoryForFileIfMissing(animationFilePath)
-        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName().lower()+a.name+".md5anim")
+        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName().lower()+action.name+".md5anim")
         print(animationFilePath)
         file = open(animationFilePath, 'w+')
         meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
@@ -949,7 +948,8 @@ class ExportMD5(bpy.types.Operator):
 def getSuggestedModelName():
     fileName = bpy.path.basename(bpy.data.filepath)
     fileNameWithoutExtension = os.path.splitext(fileName)[0]
-    return fileNameWithoutExtension
+
+    return fileNameWithoutExtension[:1].lower() + fileNameWithoutExtension[1:]
   
 def getTargetTerasologyAssetsDirectory(context):
     """ REturns the asset directory where the files will be stored or None if it does not exist"""
@@ -1034,25 +1034,19 @@ def exportPrefabForTerasology(assetDirectory, report = print):
   data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
   data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
 
-  for a in bpy.context.scene.action_group:
-    print(a.name)
-    flag = 0
-    if "stand" in a.name.lower() or "idle" in a.name.lower():
-      data["Stand"]["animationPool"].append(modelName+a.name)
-      flag =1
-    elif "walk" in a.name.lower():
-      data["Walk"]["animationPool"].append(modelName+a.name)
-      flag = 1
-    elif "die" in a.name.lower():
-      data["Die"]["animationPool"].append(modelName+a.name)
-      flag = 1
-    if not flag:
-      data["Stand"]["animationPool"].append(modelName+a.name)
+  for action in bpy.context.screen.action_group:
+    if "stand" in action.name.lower() or "idle" in action.name.lower():
+      data["Stand"]["animationPool"].append(modelName+action.name)
+    elif "walk" in action.name.lower():
+      data["Walk"]["animationPool"].append(modelName+action.name)
+    elif "die" in action.name.lower():
+      data["Die"]["animationPool"].append(modelName+action.name)
+    else:
+      data["Stand"]["animationPool"].append(modelName+action.name)
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
   prefabDirectory = os.path.join(assetDirectory,"prefabs")
   fileName = modelName+".prefab"
-  print(fileName)
   createDirectoryForFileIfMissing(os.path.join(prefabDirectory,fileName))
   # print("Exporting prefab at: " + prefabDirectory)
   with open(os.path.join(prefabDirectory,fileName),"w") as outFile:
@@ -1068,30 +1062,29 @@ def exportMaterialForTerasology(assetDirectory, report = print):
 
   modelName = getSuggestedModelName()
 
-  data["params"]["diffuse"] = modelName.lower()
+  data["params"]["diffuse"] = modelName
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
   materialDirectory = os.path.join(assetDirectory,"materials")
-  fileName = modelName.lower()+"Skin.mat"
-  createDirectoryForFileIfMissing(os.path.join(materialDirectory,fileName))
-  print("Exporting material file at: " + materialDirectory)
-  with open(os.path.join(materialDirectory,fileName),"w") as outFile:
+  fileName = modelName+"Skin.mat"
+  materialFilePath = os.path.join(materialDirectory,fileName)
+  createDirectoryForFileIfMissing(materialFilePath)
+  with open(materialFilePath,"w") as outFile:
     json.dump(data, outFile, indent = 2)
 
   return None
 
 # import getpass
-def exportModuleForTerasology(parentDirectory):
+def exportModuleForTerasology(parentDirectory, fileName, report = print):
   data = json.loads(moduleData, object_pairs_hook = OrderedDict)
-  print(data)
   modelName  = getSuggestedModelName()
-  data["id"] = modelName[:1].upper()+modelName[1:]
+  data["id"] = fileName
   data["displayName"] = modelName
-  data["description"] = "This module contains a single " + modelName + "model that can be spawned with spawnPrefab" + modelName + ". The module has been generated with the Blender addon from the TeraMisc repository"
+  data["description"] = "This module contains a single " + modelName + " model that can be spawned with spawnPrefab" + modelName + ". The module has been generated with the Blender addon from the TeraMisc repository"
   # data["author"] = getpass.getuser()
   data["version"] = "0.1.1-SNAPSHOT"
 
-  fileName = "modules.txt"
+  fileName = "module.txt"
   with open(os.path.join(parentDirectory, fileName),'w') as outFile:
     json.dump(data, outFile, indent = 2)
 
@@ -1104,53 +1097,89 @@ def exportTextureForTerasology(assetDirectory, report = print):
   blendFilePath = bpy.path.abspath("//")
   modelName = getSuggestedModelName()
   textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
-  texturePath = os.path.join(blendFilePath,textureFileName)
-  texturePath2 = bpy.path.abspath(bpy.data.images[0].filepath)
-  print("++++++++++++",bpy.path.abspath(bpy.data.images[0].filepath))
-  if not os.path.isfile(texturePath) or not os.path.isfile(texturePath2):
-    report({'ERROR'}, "Texture File must be present in same folder as the .blend file")
-    return
+  # texturePath = os.path.join(blendFilePath,textureFileName)
+  texturePath = bpy.path.abspath(bpy.data.images[0].filepath)
+  if not os.path.isfile(texturePath):
+    report({'ERROR'}, "Texture File must be present in same folder as the .blend file named " + textureFileName)
+    return{'ERROR'}
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
   textureDirectory = os.path.join(assetDirectory,"textures")
   if not os.path.exists(textureDirectory):
     os.makedirs(textureDirectory)
-
-  if os.path.isfile(texturePath2):
-    copy(texturePath2,textureDirectory)
-  else:
-    copy(texturePath, textureDirectory)
+  copy(texturePath, textureDirectory)
   return{'FINISHED'}
 
 class ExportPrefabForTerasology(bpy.types.Operator):
+  '''Export prefab for the model'''
   bl_idname = "export.prefab"
   bl_label = "Export a prefab for Terasology"
 
   def invoke(self, context, event):
-    assetDirectory = getTargetTerasologyAssetsDirectory()
+    assetDirectory = getTargetTerasologyAssetsDirectory(context)
     exportPrefabForTerasology(assetDirectory)
 
     return{'FINISHED'}
 
 class ExportMaterialForTerasology(bpy.types.Operator):
+  '''Export the material file(.mat) for the model'''
   bl_idname = "export.material"
   bl_label = "Export a material for Terasology"
 
   def invoke(self, context, event):
-    assetDirectory = getTargetTerasologyAssetsDirectory()
+    assetDirectory = getTargetTerasologyAssetsDirectory(context)
     exportMaterialForTerasology(assetDirectory)
 
     return{'FINISHED'}
 
 class ExportTextureForTerasology(bpy.types.Operator):
+  '''Export the texture file for the model'''
   bl_idname = "export.texture"
   bl_label = "Export a texture for Terasology"
 
   def invoke(self, context, event):
-    assetDirectory = getTargetTerasologyAssetsDirectory()
+    assetDirectory = getTargetTerasologyAssetsDirectory(context)
     exportTextureForTerasology(assetDirectory, self.report)
 
     return{'FINISHED'}
+
+class ExportModuleToFileForTerasology(bpy.types.Operator):
+  '''Export the module into a directory'''
+  bl_idname = "export.module"
+  bl_label = "Export module"
+
+  filepath = StringProperty(subtype = 'FILE_PATH',name="File Path", description="Filepath for exporting", maxlen= 1024, default= "")
+
+  def execute(self, context):
+    global scale
+    scale = 1.0
+    global scale
+    scale = 1.0
+    dirpath = self.properties.filepath
+    assetDirectory = os.path.join(dirpath, "assets")
+    fileName = os.path.basename(os.path.normpath(dirpath))
+    modelName = getSuggestedModelName()
+    modelFileName = modelName + ".md5mesh"
+    animationFileName = modelName + ".md5anim"
+    prefabFileName = modelName.lower() + ".prefab"
+    textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
+    materialFileName = modelName.lower() + "Skin.mat"
+    exportModuleForTerasology(dirpath, fileName, self.report)
+    exportTextureForTerasology(assetDirectory, self.report)
+    exportPrefabForTerasology(assetDirectory, self.report)
+    exportMaterialForTerasology(assetDirectory, self.report)
+    populateActionList(context)
+    save_md5(os.path.join(assetDirectory, "skeletalMesh", modelFileName), os.path.join(assetDirectory, "animations", animationFileName))
+    context.user_preferences.addons[__name__].preferences.terasology_module_directory = self.properties.filepath
+    return{'FINISHED'}
+
+  def invoke(self, context, event):
+    WindowManager = context.window_manager
+        # fixed for 2.56? Katsbits.com (via Nic B)
+        # original WindowManager.add_fileselect(self)
+    WindowManager.fileselect_add(self)
+    return {"RUNNING_MODAL"}
+
 
 from tempfile import TemporaryDirectory
 from shutil import copy
@@ -1158,9 +1187,9 @@ import shutil
 import tempfile
 import zipfile,os
 class ExportZipFileForTerasology(bpy.types.Operator):
-  '''Create a zip that can be directly used in Terasology'''
-  bl_idname = "create.zipfile"
-  bl_label =  "Create a ZipFile for exporting the content"
+  '''Create a ready to use module(.jar) that can be directly used in Terasology'''
+  bl_idname = "export.zipfile"
+  bl_label =  "Export module"
 
   filepath = StringProperty(subtype = 'FILE_PATH',name="File Path", description="Filepath for exporting", maxlen= 1024, default= "")
   zipname = StringProperty(name="zip Name", description="Name for the zip to be exported",maxlen=64,default="")
@@ -1169,8 +1198,8 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     print(self.properties.filepath)
     global scale
     scale = 1.0
-    zipExportPath = self.properties.filepath + ".zip"
-
+    zipExportPath = self.properties.filepath + ".jar"
+    fileName = bpy.path.basename(bpy.data.filepath)
     zipf = zipfile.ZipFile(zipExportPath, 'w', zipfile.ZIP_DEFLATED)
     modelName = getSuggestedModelName()
     modelFileName = modelName + ".md5mesh"
@@ -1179,8 +1208,8 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
     materialFileName = modelName.lower() + "Skin.mat"
     dirpath = tempfile.mkdtemp()
-    exportModuleForTerasology(dirpath)
-    zipf.write(os.path.join(dirpath,"modules.txt"), "modules.txt")
+    exportModuleForTerasology(dirpath, fileName, self.report)
+    zipf.write(os.path.join(dirpath,"module.txt"), "module.txt")
     exportTextureForTerasology(dirpath, self.report)
     zipf.write(os.path.join(dirpath,"textures",textureFileName), "assets/textures/"+textureFileName)
     exportPrefabForTerasology(dirpath, self.report)
@@ -1194,85 +1223,12 @@ class ExportZipFileForTerasology(bpy.types.Operator):
       i = 0;
       for f in files:
         fn = os.path.join(dirpath, f)
-        print("@@@@@@@@@@@@@", fn)
         zipf.write(fn, "/assets/animations/" + context.scene.action_group[i].name+".md5anim")
         context.scene.action_group[i].name
         i = i+1
-    # zipf.write(os.path.join(dirpath, "animations"), "assets/animations/")
+    # shutil.rmtree(dirpath)
 
     zipf.close()
-    # shutil.rmtree(dirpath)
-    # with TemporaryDirectory() as tempDir:
-    #   exportModuleForTerasology(tempDir)
-    #   abcd = open(os.path.join(tempDir, "modules.txt"),"r")
-    #   print(abcd.read())
-    #   abcd.close()
-    #   zipf.write(os.path.join(tempDir,"modules.txt"),"modules.txt" 'a')
-    #   zipf.close()
-
-      # if self.properties.md5exportList in ["mesh & anim", "mesh only"]:
-        # modelFilePath = self.properties.filepath + ".md5mesh"
-      # else:
-        # modelFilePath = None
-#
-     # if self.properties.md5exportList in ["mesh & anim", "anim only"]:
-        # animationFilePath = self.properties.filepath + ".md5anim"
-      # else:
-        # animationFilePath = None
-      # save_md5(modelFilePath, animationFilePath)
-      # return {'FINISHED'}
-# 
-      # def invoke(self, context, event):
-        # WindowManager = context.window_manager
-        # WindowManager.fileselect_add(self)
-        # return {"RUNNING_MODAL"}
-    
-    # with TemporaryDirectory() as tempDir:
-    #   assetTempDirectory = os.path.join(tempDir,"assets")
-    #   os.makedirs(assetTempDirectory)
-    #   modelTempFilePath = os.path.join(assetTempDirectory, "skeletalMesh")
-    #   os.makedirs(modelTempFilePath)
-    #   animationTempFilePath = os.path.join(assetTempDirectory, "animations")
-    #   os.makedirs(animationTempFilePath)
-    #   materialTempFilePath = os.path.join(assetTempDirectory, "materials")
-    #   os.makedirs(materialTempFilePath)
-    #   prefabsTempFilePath = os.path.join(assetTempDirectory, "prefabs")
-    #   os.makedirs(prefabsTempFilePath)
-    #   texturesTempFilePath = os.path.join(assetTempDirectory, "textures")
-    #   os.makedirs(texturesTempFilePath)
-    #   print("folders created")
-    #   save_md5(modelTempFilePath, animationTempFilePath)
-    #   exportPrefabForTerasology(assetTempDirectory)
-    #   exportTextureForTerasology(assetTempDirectory)
-    #   exportMaterialForTerasology(assetTempDirectory)
-    #   # save_md5(modelFilePath, animationFilePath)
-    #   # exportPrefabForTerasology()
-    #   assetDirectory = getTargetTerasologyAssetsDirectory(context)
-    #   dire =  os.path.join(os.path.dirname(assetTempDirectory), 'assets.zip')
-    #   zipf = zipfile.ZipFile(dire, 'w', zipfile.ZIP_DEFLATED)
-
-    #   for root, dirs, files in os.walk(assetTempDirectory):
-
-    #     if root.replace(assetTempDirectory,'') == '':
-    #       prefix = ''
-    #     else:
-    #       prefix = root.replace(assetDirectory, '') + '/'
-    #       if prefix[0] == '/' :
-    #         prefix = prefix[1:]
-    #     for file in files:
-    #         filePath = root + '/' + file
-    #         inZipPath = prefix + file
-    #         zipf.write(filePath, inZipPath)
-    #   print("Export .zip at ", os.path.dirname(assetTempDirectory))
-    #   copy(assetTempDirectory,assetDirectory)
-    #   zipf.close()
-
-
-
-    # modelFilePath = getTargetTerasologyMeshFilePath(context)
-    # animationFilePath = getTargetTerasologyAnimFilePath(context)
-        
-
     return{'FINISHED'}
   def invoke(self, context, event):
     WindowManager = context.window_manager
@@ -1327,10 +1283,10 @@ class actionlist_UL(UIList):
       pass
 
 def populateActionList(context):
-  context.scene.action_group.clear()
+  context.screen.action_group.clear()
 
-  for anim in bpy.data.actions:
-    item = context.scene.action_group.add()
+  for anim in bpy.data.scenes:
+    item = context.screen.action_group.add()
     item.name = anim.name
     item.enabled = True
   return{'FINISHED'}
@@ -1351,11 +1307,16 @@ class TerasologyExportPanel(bpy.types.Panel):
     bl_context = "scene"
     
     def draw(self, context):
-        layout = self.layout
         scene = context.scene
+        screen = context.screen
+        default_path = os.path.splitext(bpy.data.filepath)[0]
         preferences = context.user_preferences.addons[__name__].preferences
-        
-        layout.prop(preferences, "terasology_module_directory", text="Ter. Module")
+        layout = self.layout
+        col = layout.column(align = True)
+        row = col.row(align=True)
+        split = row.split(align=True, percentage = 0.95)
+        split.prop(preferences, "terasology_module_directory", text="Ter. Module", expand = True)
+        split.operator(ExportModuleToFileForTerasology.bl_idname, text="", icon = 'ZOOMIN').filepath = ""
         modelName = getSuggestedModelName()
         col = layout.column()
         col2 = layout.column()
@@ -1364,12 +1325,13 @@ class TerasologyExportPanel(bpy.types.Panel):
         animFileName = getTargetTerasologyAnimFileName(context) 
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
         col.operator("scene.populate")
-        col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
+        # col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
+        col.template_list("actionlist_UL", "", screen, "action_group", screen, "action_list_index")
         col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export Selected Animations" )
         col.operator("export.prefab", text="Export prefab file")
         col.operator("export.texture", text="Export texture file")
         col.operator("export.material", text="Export material file")
-        col.operator("create.zipfile")
+        # col.operator("create.zipfile")
         # col.operator(TerasologyMD5MeshAndAnimExportOperator.bl_idname, text="Export Both")
         layout.label(text="Note: Blend & scene name determines model file name")
 
@@ -1377,7 +1339,8 @@ def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
   self.layout.operator(ExportMD5.bl_idname, text="idTech 4 MD5 (.md5mesh .md5anim)", icon='BLENDER').filepath = default_path
   self.layout.operator(ExportZipFileForTerasology.bl_idname, text="Export zip for Terasology", icon='BLENDER').filepath = default_path
-  
+  # self.layout.operator(ExportModuleToFileForTerasology.bl_idname, text="Export module to directory", icon='BLENDER').filepath = default_path
+    
 class CustomProp(bpy.types.PropertyGroup):
   name = StringProperty()
   enabled = BoolProperty()
@@ -1385,14 +1348,14 @@ class CustomProp(bpy.types.PropertyGroup):
 def register():
   bpy.utils.register_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.append(menu_func)
-  bpy.types.Scene.action_group = CollectionProperty(type=CustomProp)
-  bpy.types.Scene.action_list_index = bpy.props.IntProperty()
+  bpy.types.Screen.action_group = CollectionProperty(type=CustomProp)
+  bpy.types.Screen.action_list_index = bpy.props.IntProperty()
 
 def unregister():
   bpy.utils.unregister_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.remove(menu_func)
-  del bpy.types.Scene.action_group
-  del bpy.types.Scene.action_list_index
+  del bpy.types.Screen.action_group
+  del bpy.types.Screen.action_list_index
 
 if __name__ == "__main__":
   register()
