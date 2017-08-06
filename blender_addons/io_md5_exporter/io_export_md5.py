@@ -53,6 +53,88 @@ moduleData = """{
 }"""
 
 
+prefabData = """{
+  "skeletalmesh" : {
+    "mesh" : "",
+    "heightOffset" : -0.8,
+    "material" : "",
+    "animation" : "",
+    "loop" : true
+  },
+  "Behavior" : {
+    "tree" : "stray"
+  },
+  "FleeOnHit" : {
+    "minDistance" : 5,
+    "speedMultiplier" : 1.2
+  },
+  "StrayIfIdle" : {
+    "defaultSpeedMultiplier" : 0.3
+  },
+  "BlockDropGrammar": {
+    "blockDrops": [],
+    "itemDrops": ["2*WildAnimals:meat"]
+  },
+  "Stand" :{
+    "animationPool": []
+  },
+  "Walk" :{
+    "animationPool": []
+  },
+  "Die" :{
+    "animationPool": []
+  },
+  "persisted" : true,
+  "location" : {},
+  "Character" : {},
+  "AliveCharacter": {},
+  "WildAnimal" : {
+    "name": "",
+    "icon": ""
+  },
+  "NPCMovement" : {},
+  "CreatureNameGenerator" : {
+    "genderRatio" : 0.5,
+    "nobility" : 0.5,
+    "theme": "DWARF"
+  },
+  "CharacterMovement" : {
+    "groundFriction" : 16,
+    "speedMultiplier" : 0.3,
+    "distanceBetweenFootsteps" : 0.2,
+    "distanceBetweenSwimStrokes" : 2.5,
+    "height" : 1.6,
+    "radius" : 0.3,
+    "jumpSpeed" : 12
+  },
+  "CharacterSound" : {
+    "footstepSounds" : ["FootGrass1", "FootGrass2", "FootGrass3", "FootGrass4", "FootGrass5"],
+    "footstepVolume" : 0.03
+  },
+  "Network" :{},
+  "MinionMove" : {},
+  "Health" : {
+    "destroyEntityOnNoHealth" : true,
+    "currentHealth": 7
+  },
+  "BoxShape" : {
+    "extents" : [1.5, 1.5, 1.5]
+  },
+  "Trigger" : {
+    "detectGroups" : ["engine:debris", "engine:sensor"]
+  }
+}"""
+
+materialData = """{
+    "shader" : "engine:genericMeshMaterial",
+    "params" : {
+        "diffuse" : "deer",
+        "colorOffset" : [1.0, 1.0, 1.0],
+        "textured" : true
+    }
+}
+"""
+
 #MATH UTILTY
 
 def vector_crossproduct(v1, v2):
@@ -1014,9 +1096,7 @@ import os,json
 from collections import OrderedDict
 def exportPrefabForTerasology(assetDirectory, report = print):
   current_file_dir = os.path.dirname(__file__)
-  file_in_path=os.path.join(current_file_dir, "template.prefab")
-  with open(file_in_path, 'r') as inFile:
-    data = json.load(inFile, object_pairs_hook=OrderedDict)
+  data = json.loads(prefabData, object_pairs_hook=OrderedDict)
 
   modelName = getSuggestedModelName().lower()
 
@@ -1048,9 +1128,7 @@ def exportPrefabForTerasology(assetDirectory, report = print):
 
 def exportMaterialForTerasology(assetDirectory, report = print):
   current_file_dir = os.path.dirname(__file__)
-  file_in_path=os.path.join(current_file_dir,"templateSkin.mat")
-  with open(file_in_path, 'r') as inFile:
-    data = json.load(inFile, object_pairs_hook = OrderedDict)
+  data = json.loads(materialData, object_pairs_hook = OrderedDict)
 
   modelName = getSuggestedModelName()
 
@@ -1141,7 +1219,7 @@ class ExportTextureForTerasology(bpy.types.Operator):
     return{'FINISHED'}
 
 class ExportModuleToFileForTerasology(bpy.types.Operator):
-  '''Export the module into a directory'''
+  '''Export the module into the directory specified'''
   bl_idname = "export.module"
   bl_label = "Export module"
 
