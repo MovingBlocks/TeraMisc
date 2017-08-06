@@ -750,6 +750,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       meshes.append(md5Mesh)
 
       blenderMesh = blenderMeshObject.data
+
       objectToWorldMatrix = blenderMeshObject.matrix_world
       
       blenderMesh.update(calc_tessface=True)
@@ -774,29 +775,20 @@ def save_md5(modelFilePath=None, animationFilePath=None):
 
     orig_action = thearmature.animation_data.action
 
-    for action in bpy.context.screen.action_group:
-      if not action.enabled:
+    for scene in bpy.data.scenes:
+      if not scene.enabled:
         continue
+      bpy.context.screen.scene = bpy.data.scenes[scene.name]
+      bpy.context.scene.update()
+      framemin, framemax  = scene.frame_start, scene.frame_end
+      rangestart = int(framemin)
+      rangeend = int(framemax)
 
-      bpy.context.screen.scene = bpy.data.scenes[action.name]
-      arm_action = bpy.data.actions.get(action.name)
-      if len(arm_action.pose_markers) < 2:
-        frame_range = (int(arm_action.frame_range[0]), int(arm_action.frame_range[1]))
-      else:
-        pm_frames = [pm.frame for pm in arm_action.pose_markers]
-        frame_range = (min(pm_frames), max(pm_frames))
-
-      rangestart = frame_range[0]
-      rangeend = frame_range[1]
-      thearmature.animation_data.action = arm_action
+      # thearmature.animation_data.action = arm_action
       ANIMATIONS = {}
-      animation = ANIMATIONS[arm_action.name] = MD5Animation(skeleton)
-  #   armature.animation_data.action = action
-      # bpy.context.scene.update()
+      animation = ANIMATIONS[scene.name] = MD5Animation(skeleton)
       # framemin, framemax = bpy.context.active_object.animation_data.Action(fcurves.frame_range)
       # framemin, framemax  = scene.frame_start, scene.frame_end
-      # rangestart = int(framemin)
-      # rangeend = int(framemax)
   #   rangestart = int( bpy.context.scene.frame_start ) # int( arm_action.frame_range[0] )
   #   rangeend = int( bpy.context.scene.frame_end ) #int( arm_action.frame_range[1] )
       currenttime = rangestart
@@ -840,7 +832,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
       if len(ANIMATIONS) > 0:
         anim = ANIMATIONS.popitem()[1] #ANIMATIONS.values()[0]
         createDirectoryForFileIfMissing(animationFilePath)
-        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName().lower()+action.name+".md5anim")
+        animationFilePath = os.path.join(os.path.dirname(animationFilePath),getSuggestedModelName().lower()+scene.name+".md5anim")
         print(animationFilePath)
         file = open(animationFilePath, 'w+')
         meshes[0].to_md5mesh()#HACK: Added line to get rid of bounding box issue
@@ -1097,17 +1089,22 @@ def exportTextureForTerasology(assetDirectory, report = print):
   blendFilePath = bpy.path.abspath("//")
   modelName = getSuggestedModelName()
   textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
-  # texturePath = os.path.join(blendFilePath,textureFileName)
+  texturePathAlternate = os.path.join(blendFilePath,textureFileName)
   texturePath = bpy.path.abspath(bpy.data.images[0].filepath)
-  if not os.path.isfile(texturePath):
+  textureDirectory = os.path.join(assetDirectory,"textures")
+  if not os.path.exists(textureDirectory):
+    os.makedirs(textureDirectory)
+
+  if os.path.isfile(texturePath):
+    copy(texturePath, textureDirectory)
+  elif os.path.isfile(texturePathAlternate):
+    copy(texturePathAlternate, textureDirectory)
+  else:
     report({'ERROR'}, "Texture File must be present in same folder as the .blend file named " + textureFileName)
     return{'ERROR'}
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
-  textureDirectory = os.path.join(assetDirectory,"textures")
-  if not os.path.exists(textureDirectory):
-    os.makedirs(textureDirectory)
-  copy(texturePath, textureDirectory)
+  
   return{'FINISHED'}
 
 class ExportPrefabForTerasology(bpy.types.Operator):
@@ -1133,7 +1130,7 @@ class ExportMaterialForTerasology(bpy.types.Operator):
     return{'FINISHED'}
 
 class ExportTextureForTerasology(bpy.types.Operator):
-  '''Export the texture file for the model'''
+  '''Export texture either linked with the model or stored in the same folder as the .blend file'''
   bl_idname = "export.texture"
   bl_label = "Export a texture for Terasology"
 
@@ -1168,7 +1165,6 @@ class ExportModuleToFileForTerasology(bpy.types.Operator):
     exportTextureForTerasology(assetDirectory, self.report)
     exportPrefabForTerasology(assetDirectory, self.report)
     exportMaterialForTerasology(assetDirectory, self.report)
-    populateActionList(context)
     save_md5(os.path.join(assetDirectory, "skeletalMesh", modelFileName), os.path.join(assetDirectory, "animations", animationFileName))
     context.user_preferences.addons[__name__].preferences.terasology_module_directory = self.properties.filepath
     return{'FINISHED'}
@@ -1216,7 +1212,6 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     zipf.write(os.path.join(dirpath, "prefabs", prefabFileName), "assets/prefabs/"+prefabFileName)
     exportMaterialForTerasology(dirpath, self.report)
     zipf.write(os.path.join(dirpath, "materials", materialFileName), "assets/materials/"+materialFileName)
-    populateActionList(context)
     save_md5(os.path.join(dirpath, "skeletalMesh", modelFileName), os.path.join(dirpath, "animations", animationFileName))
     zipf.write(os.path.join(dirpath, "skeletalMesh", modelFileName), "assets/skeletalMesh/" + modelFileName)
     for dirpath,dirs,files in os.walk(os.path.join(dirpath, "animations")):
@@ -1281,23 +1276,6 @@ class actionlist_UL(UIList):
 
     def invoke(self, context, event):
       pass
-
-def populateActionList(context):
-  context.screen.action_group.clear()
-
-  for anim in bpy.data.scenes:
-    item = context.screen.action_group.add()
-    item.name = anim.name
-    item.enabled = True
-  return{'FINISHED'}
-
-class action_poplulate(bpy.types.Operator):
-  bl_idname="scene.populate"
-  bl_label="Refresh action list"
-
-  def execute(self, context):
-    populateActionList(context)
-    return{'FINISHED'}
     
 class TerasologyExportPanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_MD5_terasologyExport"
@@ -1324,9 +1302,9 @@ class TerasologyExportPanel(bpy.types.Panel):
         meshFileName = getTargetTerasologyMeshFileName(context)
         animFileName = getTargetTerasologyAnimFileName(context) 
         col.operator(TerasologyMD5MeshExportOperator.bl_idname, text="Export " + meshFileName)
-        col.operator("scene.populate")
         # col.template_list("actionlist_UL", "", scene, "action_group", scene, "action_list_index")
-        col.template_list("actionlist_UL", "", screen, "action_group", screen, "action_list_index")
+        # col.template_list("actionlist_UL", "", screen, "action_group", screen, "action_list_index")
+        col.template_list("actionlist_UL", "", bpy.data, "scenes", screen, "action_list_index")
         col.operator(TerasologyMD5AnimExportOperator.bl_idname, text="Export Selected Animations" )
         col.operator("export.prefab", text="Export prefab file")
         col.operator("export.texture", text="Export texture file")
@@ -1349,6 +1327,7 @@ def register():
   bpy.utils.register_module(__name__)  #mikshaw
   bpy.types.INFO_MT_file_export.append(menu_func)
   bpy.types.Screen.action_group = CollectionProperty(type=CustomProp)
+  bpy.types.Scene.enabled = bpy.props.BoolProperty(options = set(), default = True)
   bpy.types.Screen.action_list_index = bpy.props.IntProperty()
 
 def unregister():
