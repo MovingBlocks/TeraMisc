@@ -1263,7 +1263,7 @@ import zipfile,os
 class ExportZipFileForTerasology(bpy.types.Operator):
   '''Create a ready to use module(.jar) that can be directly used in Terasology'''
   bl_idname = "export.zipfile"
-  bl_label =  "Export module"
+  bl_label =  "Export Zip"
 
   filepath = StringProperty(subtype = 'FILE_PATH',name="File Path", description="Filepath for exporting", maxlen= 1024, default= "")
   zipname = StringProperty(name="zip Name", description="Name for the zip to be exported",maxlen=64,default="")
@@ -1296,8 +1296,8 @@ class ExportZipFileForTerasology(bpy.types.Operator):
       i = 0;
       for f in files:
         fn = os.path.join(dirpath, f)
-        zipf.write(fn, "/assets/animations/" + context.scene.action_group[i].name+".md5anim")
-        context.scene.action_group[i].name
+        zipf.write(fn, "/assets/animations/" + modelName + bpy.data.scenes[i].name+".md5anim")
+        bpy.data.scenes[i].name
         i = i+1
     # shutil.rmtree(dirpath)
 
