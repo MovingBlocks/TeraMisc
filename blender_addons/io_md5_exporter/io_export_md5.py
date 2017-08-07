@@ -1106,7 +1106,8 @@ def exportPrefabForTerasology(assetDirectory, report = print):
   data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
   data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
 
-  for action in bpy.context.screen.action_group:
+  for action in bpy.data.scenes:
+    print (action.name)
     if "stand" in action.name.lower() or "idle" in action.name.lower():
       data["Stand"]["animationPool"].append(modelName+action.name)
     elif "walk" in action.name.lower():
@@ -1148,9 +1149,9 @@ def exportMaterialForTerasology(assetDirectory, report = print):
 def exportModuleForTerasology(parentDirectory, fileName, report = print):
   data = json.loads(moduleData, object_pairs_hook = OrderedDict)
   modelName  = getSuggestedModelName()
-  data["id"] = fileName
+  data["id"] = (os.path.splitext(fileName)[0])[:1].upper() + (os.path.splitext(fileName)[0])[1:].lower()
   data["displayName"] = modelName
-  data["description"] = "This module contains a single " + modelName + " model that can be spawned with spawnPrefab" + modelName + ". The module has been generated with the Blender addon from the TeraMisc repository"
+  data["description"] = "This module contains a single " + modelName + " model that can be spawned with spawnPrefab " + modelName + ". The module has been generated with the Blender addon from the TeraMisc repository"
   # data["author"] = getpass.getuser()
   data["version"] = "0.1.1-SNAPSHOT"
 
@@ -1269,10 +1270,8 @@ class ExportZipFileForTerasology(bpy.types.Operator):
   bl_label =  "Export Zip"
 
   filepath = StringProperty(subtype = 'FILE_PATH',name="File Path", description="Filepath for exporting", maxlen= 1024, default= "")
-  zipname = StringProperty(name="zip Name", description="Name for the zip to be exported",maxlen=64,default="")
 
   def execute(self, context):
-    print(self.properties.filepath)
     global scale
     scale = 1.0
     zipExportPath = self.properties.filepath + ".jar"
@@ -1396,8 +1395,9 @@ class TerasologyExportPanel(bpy.types.Panel):
 
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
+  zip_path = os.path.join(os.path.dirname(default_path), ((os.path.basename(default_path))[:1].upper()+(os.path.basename(default_path))[1:].lower()) + "-0.1.1-SNAPSHOT")
   self.layout.operator(ExportMD5.bl_idname, text="idTech 4 MD5 (.md5mesh .md5anim)", icon='BLENDER').filepath = default_path
-  self.layout.operator(ExportZipFileForTerasology.bl_idname, text="Export zip for Terasology", icon='BLENDER').filepath = default_path
+  self.layout.operator(ExportZipFileForTerasology.bl_idname, text="Export zip for Terasology", icon='BLENDER').filepath = zip_path
   # self.layout.operator(ExportModuleToFileForTerasology.bl_idname, text="Export module to directory", icon='BLENDER').filepath = default_path
     
 class CustomProp(bpy.types.PropertyGroup):
