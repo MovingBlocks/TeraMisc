@@ -1224,12 +1224,15 @@ class ExportModuleToFileForTerasology(bpy.types.Operator):
   bl_label = "Export module"
 
   filepath = StringProperty(subtype = 'FILE_PATH',name="File Path", description="Filepath for exporting", maxlen= 1024, default= "")
+  filename = StringProperty(subtype = 'FILE_NAME',name="Folder Name", description="Folder Name for exporting", maxlen= 1024, default= "bhbhb")
 
   def execute(self, context):
     global scale
     scale = 1.0
     global scale
     scale = 1.0
+    if self.properties.filename != "":
+      os.makedirs(self.properties.filepath)
     dirpath = self.properties.filepath
     assetDirectory = os.path.join(dirpath, "assets")
     fileName = os.path.basename(os.path.normpath(dirpath))
