@@ -771,6 +771,9 @@ def createDirectoryForFileIfMissing(filePath):
   if not os.path.exists(directory):
     os.makedirs(directory)
 
+def capitalizeFirstLetter(string):
+  return string[:1].upper() + string[1:].lower()
+
 #SERIALIZE FUNCTION
 def save_md5(modelFilePath=None, animationFilePath=None):
   """
@@ -1103,7 +1106,7 @@ def exportPrefabForTerasology(assetDirectory, report = print):
   data["skeletalmesh"]["mesh"] = modelName
   data["skeletalmesh"]["material"] = modelName+"Skin"
   data["skeletalmesh"]["animation"] = modelName+"Idle"#later check if the animation actually exists
-  data["WildAnimal"]["name"] = modelName[:1].upper()+modelName[1:]
+  data["WildAnimal"]["name"] = capitalizeFirstLetter(modelName)
   data["WildAnimal"]["icon"] = "WildAnimals:"+modelName+"Icon"
 
   for action in bpy.data.scenes:
@@ -1133,7 +1136,7 @@ def exportMaterialForTerasology(assetDirectory, report = print):
 
   modelName = getSuggestedModelName()
 
-  data["params"]["diffuse"] = modelName
+  data["params"]["diffuse"] = modelName + "Texture"
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
   materialDirectory = os.path.join(assetDirectory,"materials")
@@ -1149,8 +1152,8 @@ def exportMaterialForTerasology(assetDirectory, report = print):
 def exportModuleForTerasology(parentDirectory, fileName, report = print):
   data = json.loads(moduleData, object_pairs_hook = OrderedDict)
   modelName  = getSuggestedModelName()
-  data["id"] = (os.path.splitext(fileName)[0])[:1].upper() + (os.path.splitext(fileName)[0])[1:].lower()
-  data["displayName"] = modelName
+  data["id"] = capitalizeFirstLetter(modelName)
+  data["displayName"] = capitalizeFirstLetter(modelName)
   data["description"] = "This module contains a single " + modelName + " model that can be spawned with spawnPrefab " + modelName + ". The module has been generated with the Blender addon from the TeraMisc repository"
   # data["author"] = getpass.getuser()
   data["version"] = "0.1.1-SNAPSHOT"
@@ -1167,7 +1170,7 @@ from shutil import copy
 def exportTextureForTerasology(assetDirectory, report = print):
   blendFilePath = bpy.path.abspath("//")
   modelName = getSuggestedModelName()
-  textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
+  textureFileName = capitalizeFirstLetter(modelName) + "Texture.png"
   texturePathAlternate = os.path.join(blendFilePath,textureFileName)
   texturePath = bpy.path.abspath(bpy.data.images[0].filepath)
   textureDirectory = os.path.join(assetDirectory,"textures")
@@ -1241,7 +1244,7 @@ class ExportModuleToFileForTerasology(bpy.types.Operator):
     modelFileName = modelName + ".md5mesh"
     animationFileName = modelName + ".md5anim"
     prefabFileName = modelName.lower() + ".prefab"
-    textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
+    textureFileName = capitalizeFirstLetter(modelName) + "Texture.png"
     materialFileName = modelName.lower() + "Skin.mat"
     exportModuleForTerasology(dirpath, fileName, self.report)
     exportTextureForTerasology(assetDirectory, self.report)
@@ -1281,7 +1284,7 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     modelFileName = modelName + ".md5mesh"
     animationFileName = modelName + ".md5anim"
     prefabFileName = modelName.lower() + ".prefab"
-    textureFileName = modelName[:1].upper()+modelName[1:] + "Texture.png"
+    textureFileName = capitalizeFirstLetter(modelName) + "Texture.png"
     materialFileName = modelName.lower() + "Skin.mat"
     dirpath = tempfile.mkdtemp()
     exportModuleForTerasology(dirpath, fileName, self.report)
@@ -1395,7 +1398,7 @@ class TerasologyExportPanel(bpy.types.Panel):
 
 def menu_func(self, context):
   default_path = os.path.splitext(bpy.data.filepath)[0]
-  zip_path = os.path.join(os.path.dirname(default_path), ((os.path.basename(default_path))[:1].upper()+(os.path.basename(default_path))[1:].lower()) + "-0.1.1-SNAPSHOT")
+  zip_path = os.path.join(os.path.dirname(default_path), capitalizeFirstLetter(os.path.basename(default_path)) + "-0.1.1-SNAPSHOT")
   self.layout.operator(ExportMD5.bl_idname, text="idTech 4 MD5 (.md5mesh .md5anim)", icon='BLENDER').filepath = default_path
   self.layout.operator(ExportZipFileForTerasology.bl_idname, text="Export zip for Terasology", icon='BLENDER').filepath = zip_path
   # self.layout.operator(ExportModuleToFileForTerasology.bl_idname, text="Export module to directory", icon='BLENDER').filepath = default_path
