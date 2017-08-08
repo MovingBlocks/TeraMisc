@@ -1,0 +1,9 @@
+
+{
+    "shader" : "engine:genericMeshMaterial",
+    "params" : {
+        "diffuse" : "deer",
+        "colorOffset" : [1.0, 1.0, 1.0],
+        "textured" : true
+    }
+}
