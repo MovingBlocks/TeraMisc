@@ -775,7 +775,7 @@ def capitalizeFirstLetter(string):
   return string[:1].upper() + string[1:].lower()
 
 #SERIALIZE FUNCTION
-def save_md5(modelFilePath=None, animationFilePath=None):
+def save_md5(modelFilePath=None, animationFilePath=None, report = print):
   """
   Arguments:
    * modelFilePath: Optional. If if it is not None, the current scene
@@ -934,6 +934,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
         file.write(buffer)
         file.close()
         print( "saved anim to " + animationFilePath )
+        report({'INFO'}, "Animation File Exported")
       else:
         print( "No md5anim file was generated." )  
 
@@ -958,6 +959,7 @@ def save_md5(modelFilePath=None, animationFilePath=None):
         file.write(buffer)
         file.close()
       print( "saved mesh to " + modelFilePath )
+      report({'INFO'}, "Model File Exported")
 
   
 ##########
@@ -1069,7 +1071,7 @@ class TerasologyMD5MeshExportOperator(bpy.types.Operator):
         modelFilePath = getTargetTerasologyMeshFilePath(context)
         animationFilePath = None
         
-        save_md5(modelFilePath, animationFilePath)
+        save_md5(modelFilePath, animationFilePath, self.report)
         return{'FINISHED'}
       
 class TerasologyMD5AnimExportOperator(bpy.types.Operator):
@@ -1084,7 +1086,7 @@ class TerasologyMD5AnimExportOperator(bpy.types.Operator):
         modelFilePath = None
         animationFilePath = getTargetTerasologyAnimFilePath(context)
         
-        save_md5(modelFilePath, animationFilePath)
+        save_md5(modelFilePath, animationFilePath, self.report)
         return{'FINISHED'}
 
 
@@ -1127,6 +1129,7 @@ def exportPrefabForTerasology(assetDirectory, report = print):
   # print("Exporting prefab at: " + prefabDirectory)
   with open(os.path.join(prefabDirectory,fileName),"w") as outFile:
     json.dump(data, outFile, indent=2)
+  report({'INFO'}, "Prefab Exported")
 
   return None
 
@@ -1145,6 +1148,7 @@ def exportMaterialForTerasology(assetDirectory, report = print):
   createDirectoryForFileIfMissing(materialFilePath)
   with open(materialFilePath,"w") as outFile:
     json.dump(data, outFile, indent = 2)
+  report({'INFO'}, "Material Exported")
 
   return None
 
@@ -1171,7 +1175,11 @@ def exportTextureForTerasology(assetDirectory, report = print):
   blendFilePath = bpy.path.abspath("//")
   modelName = getSuggestedModelName()
   textureFileName = capitalizeFirstLetter(modelName) + "Texture.png"
+  textureFileName1 = modelName + "texture.png"
+  textureFileNameAlternate = capitalizeFirstLetter(modelName) + ".png"
   texturePathAlternate = os.path.join(blendFilePath,textureFileName)
+  texturePathAlternate1 = os.path.join(blendFilePath,textureFileName)
+  texturePathAlternate2 = os.path.join(blendFilePath,textureFileName)
   texturePath = bpy.path.abspath(bpy.data.images[0].filepath)
   textureDirectory = os.path.join(assetDirectory,"textures")
   if not os.path.exists(textureDirectory):
@@ -1179,8 +1187,16 @@ def exportTextureForTerasology(assetDirectory, report = print):
 
   if os.path.isfile(texturePath):
     copy(texturePath, textureDirectory)
+    
   elif os.path.isfile(texturePathAlternate):
     copy(texturePathAlternate, textureDirectory)
+    report({'INFO'}, "Texture Exported")
+  elif os.path.isfile(texturePathAlternate):
+    copy(texturePathAlternate1, textureDirectory)
+    report({'INFO'}, "Texture Exported")
+  elif os.path.isfile(texturePathAlternate):
+    copy(texturePathAlternate2, textureDirectory)
+    report({'INFO'}, "Texture Exported")
   else:
     report({'ERROR'}, "Texture File must be present in same folder as the .blend file named " + textureFileName)
     return{'ERROR'}
@@ -1196,7 +1212,7 @@ class ExportPrefabForTerasology(bpy.types.Operator):
 
   def invoke(self, context, event):
     assetDirectory = getTargetTerasologyAssetsDirectory(context)
-    exportPrefabForTerasology(assetDirectory)
+    exportPrefabForTerasology(assetDirectory, self.report)
 
     return{'FINISHED'}
 
@@ -1207,7 +1223,7 @@ class ExportMaterialForTerasology(bpy.types.Operator):
 
   def invoke(self, context, event):
     assetDirectory = getTargetTerasologyAssetsDirectory(context)
-    exportMaterialForTerasology(assetDirectory)
+    exportMaterialForTerasology(assetDirectory, self.report)
 
     return{'FINISHED'}
 
@@ -1246,12 +1262,14 @@ class ExportModuleToFileForTerasology(bpy.types.Operator):
     prefabFileName = modelName.lower() + ".prefab"
     textureFileName = capitalizeFirstLetter(modelName) + "Texture.png"
     materialFileName = modelName.lower() + "Skin.mat"
-    exportModuleForTerasology(dirpath, fileName, self.report)
-    exportTextureForTerasology(assetDirectory, self.report)
-    exportPrefabForTerasology(assetDirectory, self.report)
-    exportMaterialForTerasology(assetDirectory, self.report)
+    exportModuleForTerasology(dirpath, fileName)
+    exportTextureForTerasology(assetDirectory)
+    exportPrefabForTerasology(assetDirectory)
+    exportMaterialForTerasology(assetDirectory)
     save_md5(os.path.join(assetDirectory, "skeletalMesh", modelFileName), os.path.join(assetDirectory, "animations", animationFileName))
+    self.report({'INFO'}, "Module Exported")
     context.user_preferences.addons[__name__].preferences.terasology_module_directory = self.properties.filepath
+
     return{'FINISHED'}
 
   def invoke(self, context, event):
@@ -1287,13 +1305,13 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     textureFileName = capitalizeFirstLetter(modelName) + "Texture.png"
     materialFileName = modelName.lower() + "Skin.mat"
     dirpath = tempfile.mkdtemp()
-    exportModuleForTerasology(dirpath, fileName, self.report)
+    exportModuleForTerasology(dirpath, fileName)
     zipf.write(os.path.join(dirpath,"module.txt"), "module.txt")
-    exportTextureForTerasology(dirpath, self.report)
+    exportTextureForTerasology(dirpath)
     zipf.write(os.path.join(dirpath,"textures",textureFileName), "assets/textures/"+textureFileName)
-    exportPrefabForTerasology(dirpath, self.report)
+    exportPrefabForTerasology(dirpath)
     zipf.write(os.path.join(dirpath, "prefabs", prefabFileName), "assets/prefabs/"+prefabFileName)
-    exportMaterialForTerasology(dirpath, self.report)
+    exportMaterialForTerasology(dirpath,)
     zipf.write(os.path.join(dirpath, "materials", materialFileName), "assets/materials/"+materialFileName)
     save_md5(os.path.join(dirpath, "skeletalMesh", modelFileName), os.path.join(dirpath, "animations", animationFileName))
     zipf.write(os.path.join(dirpath, "skeletalMesh", modelFileName), "assets/skeletalMesh/" + modelFileName)
@@ -1307,6 +1325,7 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     # shutil.rmtree(dirpath)
 
     zipf.close()
+    self.report({'INFO'}, "Module Exported")
     return{'FINISHED'}
   def invoke(self, context, event):
     WindowManager = context.window_manager
@@ -1328,7 +1347,7 @@ class TerasologyMD5MeshAndAnimExportOperator(bpy.types.Operator):
         modelFilePath = getTargetTerasologyMeshFilePath(context)
         animationFilePath = getTargetTerasologyAnimFilePath(context)
         
-        save_md5(modelFilePath, animationFilePath)
+        save_md5(modelFilePath, animationFilePath, self.report)
         return{'FINISHED'}
   
 def onTerasologyModulePathUpdate(self, context):
