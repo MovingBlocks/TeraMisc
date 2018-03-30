@@ -1139,7 +1139,12 @@ def exportMaterialForTerasology(assetDirectory, report = print):
 
   modelName = getSuggestedModelName()
 
-  data["params"]["diffuse"] = modelName + "Texture"
+  blendFilePath = bpy.path.abspath("//")
+  for fileName in os.listdir(blendFilePath):
+    if modelName.lower() in str(fileName.lower()) and ".png" in str(fileName.lower()):
+      break
+
+  data["params"]["diffuse"] = os.path.splitext(fileName)[0]
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
   materialDirectory = os.path.join(assetDirectory,"materials")
@@ -1185,6 +1190,9 @@ def exportTextureForTerasology(assetDirectory, report = print):
   if not os.path.exists(textureDirectory):
     os.makedirs(textureDirectory)
 
+  for fileName in os.listdir(blendFilePath):
+    if modelName.lower() in str(fileName.lower()) and ".png" in str(fileName.lower()):
+      copy(os.path.join(blendFilePath, fileName), textureDirectory)
   if os.path.isfile(texturePath):
     copy(texturePath, textureDirectory)
     
@@ -1198,8 +1206,8 @@ def exportTextureForTerasology(assetDirectory, report = print):
     copy(texturePathAlternate2, textureDirectory)
     report({'INFO'}, "Texture Exported")
   else:
-    report({'ERROR'}, "Texture File must be present in same folder as the .blend file named " + textureFileName)
-    return{'ERROR'}
+        report({'ERROR'}, "Texture File must be present in same folder as the .blend file named " + textureFileName)
+        return{'ERROR'}
 
   # assetDirectory = getTargetTerasologyAssetsDirectory(bpy.context)
   
@@ -1308,7 +1316,8 @@ class ExportZipFileForTerasology(bpy.types.Operator):
     exportModuleForTerasology(dirpath, fileName)
     zipf.write(os.path.join(dirpath,"module.txt"), "module.txt")
     exportTextureForTerasology(dirpath)
-    zipf.write(os.path.join(dirpath,"textures",textureFileName), "assets/textures/"+textureFileName)
+    for fileTexture in os.listdir(os.path.join(dirpath,"textures")):
+      zipf.write(os.path.join(dirpath, "textures", fileTexture), "assets/textures/"+fileTexture)
     exportPrefabForTerasology(dirpath)
     zipf.write(os.path.join(dirpath, "prefabs", prefabFileName), "assets/prefabs/"+prefabFileName)
     exportMaterialForTerasology(dirpath,)
@@ -1322,7 +1331,7 @@ class ExportZipFileForTerasology(bpy.types.Operator):
         zipf.write(fn, "/assets/animations/" + modelName + bpy.data.scenes[i].name+".md5anim")
         bpy.data.scenes[i].name
         i = i+1
-    # shutil.rmtree(dirpath)
+    shutil.rmtree(dirpath)
 
     zipf.close()
     self.report({'INFO'}, "Module Exported")
