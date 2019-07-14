@@ -2,379 +2,138 @@
     [irc.freenode]
     Server="irc.freenode.net:6667"
     Nick="gooey-bridge"
-    #RemoteNickFormat defines how remote users appear on this bridge 
-    #OPTIONAL (default empty)
     RemoteNickFormat="[{PROTOCOL}] {NOPINGNICK}: "
     ShowJoinPart=false
 
 [slack]
     [slack.terasology]
-        #REQUIRED (when not using webhooks)
-        Token="xoxb-207999961877-Pcf3vGMp0SA3ndVDLpkCUSWV"
-
-        #Icon that will be showed in slack
-        #OPTIONAL
+        Token="[TOKEN]"
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-        #how to format the list of IRC nicks when displayed in slack
-        #OPTIONAL (default plain)
         NickFormatter="plain"
-        #OPTIONAL (default 4)
         NicksPerRow=4
-
-        #Disable sending of edits to other bridges
         EditDisable=false
-
-        #Whether to prefix messages from other bridges to mattermost with RemoteNickFormat
         PrefixMessagesWithNick=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
         ShowJoinPart=false
 
 [discord]
     [discord.terasology]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/334270374349111312/5H7V7TJGkWKNptVJAqjvRV9xFmyFWBLKWyGAkz7OA2yaIxZHJNri7WqHNPzKIvZHztbb"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
     [discord.destsol]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/404140454670630912/jWq64TCE-W3Zw58lZH2YKfn3RVJxyHR7Ewk_71i7BsriLiKFN08Q9s_tD0UdwJdeBgsQ"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
     [discord.ai]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/552221606533922820/K2W0PGnfLiXfcT-QziRRyIqdqtQB90Ib1HMIX4OmBPIGzkUdHexgkJnM2SQNfk6AmelT"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
     [discord.geneticbees]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/577189183785795604/YhsKChUbGxNXSAij5S3MVqk_TpbTZ48qdh3glOarT6d9b6JgAE8ROHGPPZdaAO4VVUpk"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-    [discord.renegades]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
-        Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
-        ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/577194184809906177/AcU5jHsb-GY-sLh7v1EBW2jF_8kYvS8u9idxOg22-HcjE3l87rebdz3loeK0NcKkeAn_"
-
-        #Disable sending of edits to other bridges
-        EditDisable=false
-
-        #Nicks you want to ignore. 
-        IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
-        ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
     [discord.restoration]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/577194600469364757/ZS_zR4p5Jr0_QDsgilOAd3WQ4fg9O4FG2CTSq3UraLXHRyCNcfni2vGBvTlEH4z1k1gb"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
     [discord.lightandshadow]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/579268846901264404/yJVoyqslXOtcib47TvBJG4oyLfwrTvO72Ew9ZNtoWGSkusCze5mvGVuKmFwV4GzNoYFc"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
       
 	[discord.module-site]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/580143755106058250/a_VE2FcFry-G_KQxNpwqtNx8GQY--w22doEd5nOOoXX0SrzIr2c6iQQhi5HUBOkJAgju"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
         
 	[discord.renegades-world]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/580147348840120342/4e_Za7vc_pQZKYwl9Pux_-rG_sWc0bsn4Vam2FZb--7lW8hFUjFX15sukT0mq2-QCG0z"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"	
+        IconURL="https://robohash.org/{NICK}.png?size=96x96"
         
 	
 	[discord.renegades-multi]
-        #Token to connect with Discord API
-        #REQUIRED
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
-
-        #REQUIRED
+        Token="[TOKEN]"
         Server="Terasology"
-
-        #Shows title, description and URL of embedded messages (sent by other bots)
-        #OPTIONAL (default false)
         ShowEmbeds=false
-
-        #Specify WebhookURL. If given, will relay messages using the Webhook, which gives a better look to messages.
-        #OPTIONAL (default empty)
-        WebhookURL="https://discordapp.com/api/webhooks/577194184809906177/AcU5jHsb-GY-sLh7v1EBW2jF_8kYvS8u9idxOg22-HcjE3l87rebdz3loeK0NcKkeAn_"
-
-        #Disable sending of edits to other bridges
+        WebhookURL="URL"
         EditDisable=false
-
-        #Nicks you want to ignore. 
         IgnoreNicks="GitHub"
-
-        #RemoteNickFormat defines how remote users appear on this bridge 
-        #OPTIONAL (default empty)
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
-
-        #Enable to show users joins/parts from other bridges 
-        #OPTIONAL (default false)
         ShowJoinPart=false
-
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
 	[discord.launcher]
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
+        Token="[TOKEN]"
         Server="Terasology"
         ShowEmbeds=false
-        WebhookURL="https://discordapp.com/api/webhooks/591982038442049546/0RsWKIc42pzp2owzdl50LslojMHFwjJUStPkPZLsn6KqXd-TOQNaKtL-ZmVxJ-Ue6lXt"
+        WebhookURL="URL"
         EditDisable=false
         IgnoreNicks="GitHub"
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
         ShowJoinPart=false
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
-        [discord.rendering]
-        Token="MzMyMTA5NzY0NzY5MzQ5NjMy.DQLIMw.VLC4YLZfR3BBRfx9dFTQizxEink"
+    [discord.rendering]
+        Token="[TOKEN]"
         Server="Terasology"
         ShowEmbeds=false
-        WebhookURL="https://discordapp.com/api/webhooks/591982702534852608/AjwV9Khfz9bS-q78WBADlEv1BLYdHQPtvrPtHQW-6wMl8tCxTmDyvnCZ4inhos5DqCRA"
+        WebhookURL="URL"
         EditDisable=false
         IgnoreNicks="GitHub"
         RemoteNickFormat="[{PROTOCOL}] {NICK}"
