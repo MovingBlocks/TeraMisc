@@ -1,9 +1,9 @@
 [irc]
     [irc.freenode]
-    Server="irc.freenode.net:6667"
-    Nick="gooey-bridge"
-    RemoteNickFormat="[{PROTOCOL}] {NOPINGNICK}: "
-    ShowJoinPart=false
+        Server="irc.freenode.net:6667"
+        Nick="gooey-bridge"
+        RemoteNickFormat="[{PROTOCOL}] {NOPINGNICK}: "
+        ShowJoinPart=false
 
 [slack]
     [slack.terasology]
@@ -29,117 +29,6 @@
         ShowJoinPart=false
         IconURL="https://robohash.org/{NICK}.png?size=96x96"
 
-    [discord.destsol]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-    [discord.ai]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-    [discord.geneticbees]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-    [discord.restoration]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-    [discord.lightandshadow]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-      
-	[discord.module-site]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-        
-	[discord.renegades-world]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-        
-	
-	[discord.renegades-multi]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-	[discord.launcher]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
-    [discord.rendering]
-        Token="[TOKEN]"
-        Server="Terasology"
-        ShowEmbeds=false
-        WebhookURL="URL"
-        EditDisable=false
-        IgnoreNicks="GitHub"
-        RemoteNickFormat="[{PROTOCOL}] {NICK}"
-        ShowJoinPart=false
-        IconURL="https://robohash.org/{NICK}.png?size=96x96"
-
 [[gateway]]
 name="terasology"
 enable=true
@@ -154,6 +43,8 @@ enable=true
     [[gateway.inout]]
     account="discord.terasology"
     channel="terasology"
+    [gateway.inout.options]
+    WebhookURL="URL"
 
 [[gateway]]
 name="dest-sol"
@@ -167,8 +58,10 @@ enable=true
     channel="destination-sol"
 
     [[gateway.inout]]
-    account="discord.destsol"
+    account="discord.terasology"
     channel="destination-sol"
+    [gateway.inout.options]
+    WebhookURL="URL"
 
 [[gateway]]
 name="terasology-ai"
@@ -178,8 +71,10 @@ enable=true
     channel="ai"
 
     [[gateway.inout]]
-    account="discord.ai"
+    account="discord.terasology"
     channel="ai"
+    [gateway.inout.options]
+    WebhookURL="URL"
 
 [[gateway]]
 name="terasology-geneticbees"
@@ -189,8 +84,10 @@ enable=true
     channel="genetic-bees"
 
     [[gateway.inout]]
-    account="discord.geneticbees"
+    account="discord.terasology"
     channel="genetic-bees"
+    [gateway.inout.options]
+    WebhookURL="URL"
 
 [[gateway]]
 name="terasology-renegades-multi"
@@ -200,8 +97,10 @@ enable=true
     channel="metal-renegades-multi"
 
     [[gateway.inout]]
-    account="discord.renegades-multi"
+    account="discord.terasology"
     channel="metal-renegades-multi"
+    [gateway.inout.options]
+    WebhookURL="URL"
 	
 [[gateway]]
 name="terasology-renegades-world"
@@ -211,8 +110,10 @@ enable=true
     channel="metal-renegades-world"
 
     [[gateway.inout]]
-    account="discord.renegades-world"
+    account="discord.terasology"
     channel="metal-renegades-world"
+    [gateway.inout.options]
+    WebhookURL="URL"
 	
 
 
@@ -224,8 +125,10 @@ enable=true
     channel="restoration-100"
 
     [[gateway.inout]]
-    account="discord.restoration"
+    account="discord.terasology"
     channel="restoration-100"
+    [gateway.inout.options]
+    WebhookURL="URL"
 
 
 [[gateway]]
@@ -236,8 +139,10 @@ enable=true
     channel="light-and-shadow"
 
     [[gateway.inout]]
-    account="discord.lightandshadow"
+    account="discord.terasology"
     channel="light-and-shadow"
+    [gateway.inout.options]
+    WebhookURL="URL"
 	
 
 [[gateway]]
@@ -248,8 +153,10 @@ enable=true
     channel="module-site"
 
     [[gateway.inout]]
-    account="discord.module-site"
+    account="discord.terasology"
     channel="module-site"
+    [gateway.inout.options]
+    WebhookURL="URL"
 
 [[gateway]]
 name="terasology-launcher"
@@ -259,8 +166,10 @@ enable=true
     channel="launcher"
 
     [[gateway.inout]]
-    account="discord.launcher"
+    account="discord.terasology"
     channel="launcher"
+    [gateway.inout.options]
+    WebhookURL="URL"
     
 [[gateway]]
 name="terasology-rendering"
@@ -270,5 +179,7 @@ enable=true
     channel="rendering"
 
     [[gateway.inout]]
-    account="discord.rendering"
+    account="discord.terasology"
     channel="rendering"
+    [gateway.inout.options]
+    WebhookURL="URL"
